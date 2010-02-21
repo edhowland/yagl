@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# yagl - Yet Another Generator Language
+require 'getoptlong'
+require 'fileutils'
+require 'pathname'
+require 'erb'
+
+include FileUtils
+
+# fake out for cucumber
+
+cmd=(File.basename(Dir.pwd))
+target=ARGV[0] + '/bin/' + cmd
+
+File.open(target, "w+") do |f|
+  f.write <<-EOD
+#!/usr/bin/env ruby  
+# #{cmd}
+puts "in #{cmd}"  
+  EOD
+end
+
+chmod(0755, target)

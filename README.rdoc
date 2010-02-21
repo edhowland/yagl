@@ -28,7 +28,8 @@ yagl .
 require "yagl/handlers"
 require "proj/yagltasks"
 
-program: "proj_gen"           # overrides autodiscovered <proj> from cwd    
+program "proj_gen"           # overrides autodiscovered <proj> from cwd    
+description "A project that generates project stuff."
 
 template :root, "./templates" # anchor template root, instead of autodiscovery
 template :ruby                # option -r, --ruby (default) created
@@ -69,6 +70,7 @@ option :help, "You're looking at it!" do |o|
   }}
 end
 
+option_alias :dry_run, :pretend      # mimics pretend wit dry-run
 
 command :install                     # adds install, help commands
 command :uninstall, "uninstalls <%= proj %>" do |c|
@@ -89,7 +91,14 @@ command :uninstall, "uninstalls <%= proj %>" do |c|
   }}
 end
 
-run!                                  # create the script
+summary="My first project"          # set variable summary for :summary option 
+cucumber=true                       # set cucumber? to true, overrides 
+                                    # option :cucumber if not specified
+
+
+version '0.3.5'                      # overrides VERSION file, if any    
+
+run!                                 # create the script
 
 == Usage
 
