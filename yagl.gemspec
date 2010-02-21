@@ -9,9 +9,11 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Ed Howland"]
-  s.date = %q{2010-02-20}
+  s.date = %q{2010-02-21}
+  s.default_executable = %q{yagl}
   s.description = %q{YAGL - Yet Another Generator Language. A mini-DSL for describing Rails-like generators}
   s.email = %q{ed.howland@gmail.com}
+  s.executables = ["yagl"]
   s.extra_rdoc_files = [
     "LICENSE",
      "README.rdoc"
@@ -25,6 +27,7 @@ Gem::Specification.new do |s|
      "LICENSE",
      "README.rdoc",
      "Rakefile",
+     "bin/yagl",
      "doc/README.txt",
      "doc/_index.html",
      "doc/class_list.html",
@@ -41,13 +44,16 @@ Gem::Specification.new do |s|
      "doc/js/jquery.js",
      "doc/method_list.html",
      "doc/top-level-namespace.html",
+     "features/step_definitions/filedir_steps.rb",
+     "features/step_definitions/system_steps.rb",
      "features/step_definitions/yagl_steps.rb",
      "features/support/env.rb",
      "features/yagl.feature",
      "lib/yagl.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb",
-     "spec/yagl_spec.rb"
+     "spec/yagl_spec.rb",
+     "yagl.gemspec"
   ]
   s.homepage = %q{http://github.com/edhowland/yagl}
   s.rdoc_options = ["--charset=UTF-8"]
