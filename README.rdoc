@@ -1,6 +1,167 @@
-= yagl
+== yagl
 
-Description goes here.
+YAGL - Yet Another Generator Language
+
+A mini-DSL for describing Rails-like generators.
+
+== About
+
+About
+
+I wrote Yagl because I was tired of always re-writing common command line parsing scripts. Also, I saw a need to write generator scripts like rails or rspec-on-rails for various gems I was writing. This is a very straightforward set of steps, so why constantly re-write it every time. Generally you process some command line arguments, set internal variables, run the loop to recurse the templates folder and copy/overwrite the files in the destination.
+
+== Definitions
+
+A generator is a script used to pre-populate or update a destination directory tree, usually from a source template tree. Programs like Rails, Jeweler and the RSpec Rails are examples. The source template may contain files that are templates themselves, using a templating language such as ERb or Haml.
+
+A DSL is a Domain Specific Language. Usually less than a full featured programming language tailored to specific tasks within a domain. An example is the Rake automation too. A mini-DSL is a simplified DSL containing very few language elements. Some DSL's, like Rake and Yagl, execute within the context of another programming language such as Ruby. Therefore, code written in Ruby will be executed within the DSL as it is interpreted.
+
+
+== Synopsis
+
+cd <proj>
+yagl .
+#=> Reads Yaglfile, if any, creates bin/<proj>. <proj> when run will generate 
+#   a destination directory, or update it if it exists. 
+
+# Yaglfile
+require "yagl/handlers"
+require "proj/yagltasks"
+
+program: "proj_gen"           # overrides autodiscovered <proj> from cwd    
+
+template :root, "./templates" # anchor template root, instead of autodiscovery
+template :ruby                # option -r, --ruby (default) created
+template :ruby_19, "ruby-1.9" # normally "ruby-19"
+
+event :on_overwrite do |pre, handler, post|
+  handler = diff_handler          # adds (d)iff to "Yna"
+  post = lambda {puts file+ " overwritten!"}
+end
+
+
+option :ruby_19, "Use Ruby 1.9 instead" # overrides template :ruby_19 
+option :spec                          # option -s, --spec 
+                                      # desc = "generate RSpec spec folder"
+option :cucumber, "generate cukes"    # option -c, --cucumber
+option :summary, :arg => [:required]  # variable summary from required 
+                                      # argument to --summary
+                                      
+option :create_repo do |o|
+ o.short=:p
+ o.long='create-repository'           # override default --create-repo
+ o.arg=[:optional, /url_regex/]       # optional URL repository argument
+ o.desc="create repository on Github" 
+end
+
+option :gem do |o|
+  o.when = %Q{lambda {
+    system("gem build #{prog}.gemspec")
+  }}
+end
+
+
+no_option :help, :pretend                    # eliminate built-in options
+options -= [:help. :pretend]                 # same as above
+option :help, "You're looking at it!" do |o|
+  o.when = %Q{lambda {
+    puts "no option help at this time. Your're on your own. Good luck!"
+  }}
+end
+
+
+command :install                     # adds install, help commands
+command :uninstall, "uninstalls <%= proj %>" do |c|
+  c.option :force do |o|
+    o.short=nil
+    o.desc="force uninstall"
+  end
+  c.option :verbose, "be very verbose about it" do |o|
+    o.when=%Q{lambda {puts "Being Very Verbose about uninstalling"}}
+  end
+  c.event :on_verbose do |command, path, file, ext|
+   %Q{lambda{
+        puts "uninstalling #{path}/#{file}"
+     }}
+  end
+  c.execute %Q{lambda {
+    # code that execute's uninstall operation
+  }}
+end
+
+run!                                  # create the script
+
+== Usage
+
+embedded:
+ require "rubygems" # if needed
+ require "yagl"
+ 
+ ... 
+ script = Yagl::Parser.parse(<<-EOC
+ 
+ [yagl dsl code]
+ 
+ EOC
+ )
+ 
+ script.write(path)
+ # -- or --
+ File.open(path, 'w+') do |f|
+  f.write(script.to_s)
+ end
+--- 
+ 
+Command line:
+  yagl [options] [script.ygl  [script]]
+  
+The script.ygl contains code written in the Yagl DSL. By default, looks for Yaglfile or <proj>.ygl in the current directory. Once parsed, it  generates the resulting script. Running the script:
+
+ ./script [option] dest
+ 
+will copy files from a template, to the dest folder. If any matching pathnames already exist, the user will be promted to overwrite them (or diff them, etc.), unless the -f, --force options are given.
+
+Note both file names are optional. Running yagl with only a dir will generated a completely functional generator script, after trying to sus out the templates and bin folder.
+
+For instance, say you are in your spec_wire gem source folder and want to create a bin/spec_wire command that read from the templates folder.
+
+yagl .
+
+would create bin/spec_wire with a full set of options.
+
+Erb or Haml templates
+
+Template files can have the extension .erb or .haml and will be run through ERb or Haml before being written to the destination path. This alows substitution of generator variables prior to being written out. The extensions (.erb, .haml) are removed prior to being copied. Using .i after the extension will ignore this process and leave the extension as is. This is useful for Rails/Sinatra views and other frameworks. This can also be indicated via the DSL.
+
+== DSL
+
+Yagl's command language is designed to be very simple and declarative. The simplest Yaglfile is no Yaglfile at all. Everything such as the gernator script name and the templates folder are autodiscovered from the current directory. 
+
+A descriptive Yaglfile might contain a single line:
+
+template :ruby1_9
+
+Assuming a templates folder such as:
+.
+`-- templates
+    |-- ruby
+    |   `-- models
+    `-- ruby1-9
+        `-- models
+
+yagl would generate a script with options:
+   -r, --ruby "install ruby template (default)"
+   --ruby1-9  "install ruby1-9 template"
+   
+Additionally, commands such as option, command, event, usage, run! and post can be added. See the Wiki for more information.
+ 
+
+== Resources
+
+gemcutter:
+google group:
+github:
+
 
 == Note on Patches/Pull Requests
  
