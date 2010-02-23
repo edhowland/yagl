@@ -9,6 +9,3 @@ After do
 end
 
 
-Then /^the output should be$/ do |string|
-  pending # express the regexp above with the code you wish you had
-end

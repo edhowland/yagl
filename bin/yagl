@@ -3,7 +3,8 @@
 require 'getoptlong'
 require 'fileutils'
 require 'pathname'
-require 'erb'
+require 'erubis'
+require File.expand_path(File.dirname(__FILE__)) + '/../lib/yagl'
 
 include FileUtils
 
@@ -12,12 +13,14 @@ include FileUtils
 cmd=(File.basename(Dir.pwd))
 target=ARGV[0] + '/bin/' + cmd
 
+discoverer=Yagl::Discoverer.new
+template_root=discoverer.templates
+
+erubus=File.read(File.expand_path(File.dirname(__FILE__)) +  '/../template/target.rb.eruby')
+eruby = Erubis::Eruby.new(erubus)    # create Eruby object
+
 File.open(target, "w+") do |f|
-  f.write <<-EOD
-#!/usr/bin/env ruby  
-# #{cmd}
-puts "in #{cmd}"  
-  EOD
+  f.write eruby.result(binding())
 end
 
 chmod(0755, target)

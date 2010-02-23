@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+require "rubygems"
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../../../lib')
+require "yagl"
+
+copier=Yagl::Copier.new('<%= template_root %>', ARGV[0])
+copier.copy!
