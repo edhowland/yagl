@@ -30,3 +30,7 @@ module Yagl
     end
   end
 end
+
+def die(msg, failed=false)
+  puts msg; exit(failed ? -1 : 0)
+end

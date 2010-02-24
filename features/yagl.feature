@@ -28,11 +28,11 @@ Feature: something something
     Then the output should be
     """
 Usage:
-     mygem [options] target_dir
-Template Options:
+  mygem [options] destination
+  Template Options:
      -r, --ruby                     install the ruby template
      --ruby-19                      install the ruby-19 template
-  Standard optons:
+  Standard options:
      -f, --force                    force overwriting files, don't ask
      -s, --skip                     skip file if it exists
      -q, --quiet                    runs quietly, no output

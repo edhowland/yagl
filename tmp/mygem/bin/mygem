@@ -7,7 +7,7 @@ require "yagl"
 
 $usage=%Q{
 Usage:
-<%= cmd %> [options] destination
+mygem [options] destination
 Standard options:
  -h, --help                     this help
 }
@@ -27,5 +27,5 @@ opts.each do |opt, arg|
 end
 
 
-copier=Yagl::Copier.new('<%= template_root %>', ARGV[0])
+copier=Yagl::Copier.new('templates', ARGV[0])
 copier.copy!
