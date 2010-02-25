@@ -10,6 +10,21 @@ include FileUtils
 
 # fake out for cucumber
 
+# options
+
+options = []
+options << Yagl::Option.new('help')
+options << Yagl::Option.new('force')
+options << Yagl::Option.new('skip')
+options << Yagl::Option.new('quiet')
+options << Yagl::Option.new('verbose', 'V')
+options << Yagl::Option.new('version')
+options << Yagl::Option.new('debug', 'x')
+options << Yagl::Option.new('pretend')
+
+
+
+# target script (cmd)
 cmd=(File.basename(Dir.pwd))
 target=ARGV[0] + '/bin/' + cmd
 

@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+# mygem
+require "rubygems"
+require 'getoptlong'
+# TODO remove the following once yagl is a gem
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../../../lib')
+require "yagl"
+
+$usage=%Q{
+Usage:
+mygem [options] destination
+Standard options:
+ -h, --help                     this help
+}
+
+
+# ['--help', '-h', GetoptLong::NO_ARGUMENT], 
+
+opts = GetoptLong.new(
+  ['-h', '--help', GetoptLong::NO_ARGUMENT],
+  ['-f', '--force', GetoptLong::NO_ARGUMENT],
+  ['-s', '--skip', GetoptLong::NO_ARGUMENT],
+  ['-q', '--quiet', GetoptLong::NO_ARGUMENT],
+  ['-V', '--verbose', GetoptLong::NO_ARGUMENT],
+  ['-v', '--version', GetoptLong::NO_ARGUMENT],
+  ['-x', '--debug', GetoptLong::NO_ARGUMENT],
+  ['-p', '--pretend', GetoptLong::NO_ARGUMENT]
+)
+
+opts.each do |opt, arg|
+  case opt
+  when '--help'
+    die "Ok\n" + $usage
+  when '--force'
+    die "Ok\n" + $usage
+  when '--skip'
+    die "Ok\n" + $usage
+  when '--quiet'
+    die "Ok\n" + $usage
+  when '--verbose'
+    die "Ok\n" + $usage
+  when '--version'
+    die "Ok\n" + $usage
+  when '--debug'
+    die "Ok\n" + $usage
+  when '--pretend'
+    die "Ok\n" + $usage
+  else
+    die 'BAD' + $usage
+  end
+end
+
+
+copier=Yagl::Copier.new('templates', ARGV[0])
+copier.copy!

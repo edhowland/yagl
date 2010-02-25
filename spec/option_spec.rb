@@ -2,6 +2,17 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require "getoptlong"
 
 describe Yagl::Option do
+  describe "long_option" do
+    it "should be --help" do
+      option = Yagl::Option.new('help')
+      option.long_option.should == '--help'
+    end
+    it "should be -h" do
+      option = Yagl::Option.new('help')
+      option.short_option.should == '-h'
+    end
+  end
+  
   it "should interpret short option from long" do
     option = Yagl::Option.new('help')
     option.to_s.should == "['-h', '--help', GetoptLong::NO_ARGUMENT]"
@@ -38,5 +49,8 @@ describe Yagl::Option do
       option = Yagl::Option.new('url', nil, true)
       option.to_a.should == ['-u', '--url', GetoptLong::REQUIRED_ARGUMENT]
     end
+  end
+  describe "usage" do
+    
   end
 end

@@ -38,11 +38,16 @@ module Yagl
       @short = @long[0] if short.nil?
       @required_arg = required_arg
     end
-
+    def long_option
+      "--#{@long}"
+    end
+    def short_option
+      "-#{@short}"
+    end
     def to_a
       arry=[]
-      arry << "-#{@short}" if @short
-      arry << "--#{@long}"
+      arry << short_option if @short
+      arry << long_option
       arry << (@required_arg ? GetoptLong::REQUIRED_ARGUMENT : GetoptLong::NO_ARGUMENT)
     end
     def arg_format

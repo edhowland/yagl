@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# <%= cmd %>
 require "rubygems"
 require 'getoptlong'
 # TODO remove the following once yagl is a gem
@@ -16,17 +17,19 @@ Standard options:
 # ['--help', '-h', GetoptLong::NO_ARGUMENT], 
 
 opts = GetoptLong.new(
-  <% options.each do |opt| %>
-  <%= opt.to_s
+  <% options.each_with_index do |opt, i| %>
+  <%= opt.to_s %><%= (',' unless options.size-1 == i)  %>
   <% end %>
 )
 
 opts.each do |opt, arg|
   case opt
-  when '--help'
-    die $usage
+  <% options.each do |opt| %>
+  when '<%= opt.long_option %>'
+    die "Ok\n" + $usage
+  <% end %>
   else
-    die $usage
+    die 'BAD' + $usage
   end
 end
 

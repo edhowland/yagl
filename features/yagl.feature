@@ -32,12 +32,13 @@ Usage:
   Template Options:
      -r, --ruby                     install the ruby template
      --ruby-19                      install the ruby-19 template
-  Standard options:
+  General options:
      -f, --force                    force overwriting files, don't ask
      -s, --skip                     skip file if it exists
      -q, --quiet                    runs quietly, no output
      -V, --verbose                  prints lots of output
      -v, --version                  prints version of this gem
-     -x --debug                     debugging output
+     -p, --pretend                  dry run, show what would have happened
+     -x, --debug                    debugging output
      -h, --help                     this help
 """
