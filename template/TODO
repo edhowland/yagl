@@ -1,0 +1,15 @@
+Get rest of feature to pass.
+
+Read Yaglfile in src folder inside bin/yagl
+
+create simple options command
+
+Interpret template command
+add option to options
+
+loop thru options
+  create getoptlong array in eruby template
+
+get options to generate their own usage fragments
+
+loop through options in usage bit.

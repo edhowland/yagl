@@ -29,7 +29,37 @@ module Yagl
       end
     end
   end
+
+  class Option
+    attr_accessor :long, :short, :required_arg
+    def initialize(long, short=nil, required_arg=false)
+      @short = short
+      @long = long
+      @short = @long[0] if short.nil?
+      @required_arg = required_arg
+    end
+
+    def to_a
+      arry=[]
+      arry << "-#{@short}" if @short
+      arry << "--#{@long}"
+      arry << (@required_arg ? GetoptLong::REQUIRED_ARGUMENT : GetoptLong::NO_ARGUMENT)
+    end
+    def arg_format
+        @required_arg ? "GetoptLong::REQUIRED_ARGUMENT" : "GetoptLong::NO_ARGUMENT"
+    end
+    def to_s
+      arry=to_a
+      str="["
+      arry[0..-2].each do |e|
+        str << "\'#{e}\', "
+      end
+      str << "#{arg_format}]"
+    end
+  end
 end
+
+
 
 def die(msg, failed=false)
   puts msg; exit(failed ? -1 : 0)

@@ -13,8 +13,12 @@ Standard options:
 }
 
 
+# ['--help', '-h', GetoptLong::NO_ARGUMENT], 
+
 opts = GetoptLong.new(
-  ['--help', '-h', GetoptLong::NO_ARGUMENT], 
+  <% options.each do |opt| %>
+  <%= opt.to_s
+  <% end %>
 )
 
 opts.each do |opt, arg|
