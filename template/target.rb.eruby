@@ -22,16 +22,21 @@ opts = GetoptLong.new(
   <% end %>
 )
 
-opts.each do |opt, arg|
-  case opt
-  <% options.each do |opt| %>
-  when '<%= opt.long_option %>'
-    die "Ok\n" + $usage
-  <% end %>
-  else
-    die 'BAD' + $usage
+begin
+  opts.each do |opt, arg|
+    case opt
+    <% options.each do |opt| %>
+    when '<%= opt.long_option %>'
+      die "Ok\n" + $usage
+    <% end %>
+    else
+      die 'BAD' + $usage
+    end
   end
+rescue GetoptLong::InvalidOption => e
+  die e.message
 end
+
 
 
 copier=Yagl::Copier.new('<%= template_root %>', ARGV[0])

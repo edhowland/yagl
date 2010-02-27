@@ -46,20 +46,28 @@ module Yagl
     end
     def to_a
       arry=[]
-      arry << short_option if @short
       arry << long_option
+      arry << short_option if @short
       arry << (@required_arg ? GetoptLong::REQUIRED_ARGUMENT : GetoptLong::NO_ARGUMENT)
     end
     def arg_format
         @required_arg ? "GetoptLong::REQUIRED_ARGUMENT" : "GetoptLong::NO_ARGUMENT"
     end
     def to_s
-      arry=to_a
       str="["
-      arry[0..-2].each do |e|
+      to_a[0..-2].each do |e|
         str << "\'#{e}\', "
       end
       str << "#{arg_format}]"
+    end
+    
+    def infer
+      "Show this " + long
+    end
+    
+    def usage
+      to_a[0..-2].reverse.join(', ') +
+        '                     ' + infer
     end
   end
 end

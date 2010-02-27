@@ -15,11 +15,11 @@ describe Yagl::Option do
   
   it "should interpret short option from long" do
     option = Yagl::Option.new('help')
-    option.to_s.should == "['-h', '--help', GetoptLong::NO_ARGUMENT]"
+    option.to_s.should == "['--help', '-h', GetoptLong::NO_ARGUMENT]"
   end
   it "should be explicit about short" do
     option = Yagl::Option.new('help', 'x')
-    option.to_s.should == "['-x', '--help', GetoptLong::NO_ARGUMENT]"
+    option.to_s.should == "['--help', '-x', GetoptLong::NO_ARGUMENT]"
   end
   it "should have no short option" do
     option = Yagl::Option.new('help', false)
@@ -39,7 +39,7 @@ describe Yagl::Option do
   describe "to_a" do
     it "should have all option alternatives in array" do
       option = Yagl::Option.new('help')
-      option.to_a.should == ['-h', '--help', GetoptLong::NO_ARGUMENT]
+      option.to_a.should == ['--help', '-h', GetoptLong::NO_ARGUMENT]
     end
     it "should have no short varient when false" do
       option = Yagl::Option.new('help', false)
@@ -47,10 +47,23 @@ describe Yagl::Option do
     end
     it "should have required argument" do
       option = Yagl::Option.new('url', nil, true)
-      option.to_a.should == ['-u', '--url', GetoptLong::REQUIRED_ARGUMENT]
+      option.to_a.should == ['--url', '-u', GetoptLong::REQUIRED_ARGUMENT]
     end
   end
   describe "usage" do
-    
+    describe "inference" do
+      it "should infer a string from the option name" do
+        option = Yagl::Option.new('help')
+        option.infer.should == "Show this help"
+      end
+    end
+    it "should describe itself" do
+      option = Yagl::Option.new('help')
+      option.usage.should == "-h, --help                     Show this help"
+    end
+
+    # it "should allow itself to be described" do
+    #   option = Yagl::Option.new('verbose', 'V', "Show lots of output")
+    # end
   end
 end
