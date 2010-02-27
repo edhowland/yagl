@@ -6,11 +6,14 @@ require 'getoptlong'
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../../../lib')
 require "yagl"
 
+
 $usage=%Q{
 Usage:
-<%= cmd %> [options] destination
-Standard options:
- -h, --help                     this help
+  <%= cmd %> [options] destination
+  General options:
+<% options.each do |option| %>
+     <%= option.usage %>  
+<% end %>
 }
 
 

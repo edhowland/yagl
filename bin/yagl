@@ -13,14 +13,14 @@ include FileUtils
 # options
 
 options = []
-options << Yagl::Option.new('help')
-options << Yagl::Option.new('force')
-options << Yagl::Option.new('skip')
-options << Yagl::Option.new('quiet')
-options << Yagl::Option.new('verbose', 'V')
+options << Yagl::Option.new('force', nil, false, "force overwriting files, don't ask")
+options << Yagl::Option.new('skip', nil, false, 'skip file if it exists')
+options << Yagl::Option.new('quiet', nil, false, 'runs quietly, no output')
+options << Yagl::Option.new('verbose', 'V', false, 'Show lots of output')
 options << Yagl::Option.new('version')
-options << Yagl::Option.new('debug', 'x')
-options << Yagl::Option.new('pretend')
+options << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
+options << Yagl::Option.new('debug', 'x', false, 'Show debugging output')
+options << Yagl::Option.new('help')
 
 
 

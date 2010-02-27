@@ -8,30 +8,35 @@ require "yagl"
 
 $usage=%Q{
 Usage:
-mygem [options] destination
-Standard options:
- -h, --help                     this help
+  mygem [options] destination
+  General options:
+     -f, --force                    force overwriting files, don't ask  
+     -s, --skip                     skip file if it exists  
+     -q, --quiet                    runs quietly, no output  
+     -V, --verbose                  Show lots of output  
+     -v, --version                  Show this version  
+     -p, --pretend                  dry run, show what would have happened  
+     -x, --debug                    Show debugging output  
+     -h, --help                     Show this help  
 }
 
 
 # ['--help', '-h', GetoptLong::NO_ARGUMENT], 
 
 opts = GetoptLong.new(
-  ['--help', '-h', GetoptLong::NO_ARGUMENT],
   ['--force', '-f', GetoptLong::NO_ARGUMENT],
   ['--skip', '-s', GetoptLong::NO_ARGUMENT],
   ['--quiet', '-q', GetoptLong::NO_ARGUMENT],
   ['--verbose', '-V', GetoptLong::NO_ARGUMENT],
   ['--version', '-v', GetoptLong::NO_ARGUMENT],
+  ['--pretend', '-p', GetoptLong::NO_ARGUMENT],
   ['--debug', '-x', GetoptLong::NO_ARGUMENT],
-  ['--pretend', '-p', GetoptLong::NO_ARGUMENT]
+  ['--help', '-h', GetoptLong::NO_ARGUMENT]
 )
 
 begin
   opts.each do |opt, arg|
     case opt
-    when '--help'
-      die "Ok\n" + $usage
     when '--force'
       die "Ok\n" + $usage
     when '--skip'
@@ -42,9 +47,11 @@ begin
       die "Ok\n" + $usage
     when '--version'
       die "Ok\n" + $usage
+    when '--pretend'
+      die "Ok\n" + $usage
     when '--debug'
       die "Ok\n" + $usage
-    when '--pretend'
+    when '--help'
       die "Ok\n" + $usage
     else
       die 'BAD' + $usage

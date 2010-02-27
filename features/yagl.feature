@@ -27,18 +27,18 @@ Feature: something something
     And I run local command "bin/mygem --help"
     Then the output should be
     """
-Usage:
-  mygem [options] destination
-  Template Options:
-     -r, --ruby                     install the ruby template
-     --ruby-19                      install the ruby-19 template
-  General options:
-     -f, --force                    force overwriting files, don't ask
-     -s, --skip                     skip file if it exists
-     -q, --quiet                    runs quietly, no output
-     -V, --verbose                  Show lots of output
-     -v, --version                  Show version
-     -p, --pretend                  dry run, show what would have happened
-     -x, --debug                    Show debugging output
-     -h, --help                     Show this help
-"""
+    Usage:
+      mygem [options] destination
+      Template Options:
+         -r, --ruby                     install the ruby template
+         --ruby-19                      install the ruby-19 template
+      General options:
+         -f, --force                    force overwriting files, don't ask
+         -s, --skip                     skip file if it exists
+         -q, --quiet                    runs quietly, no output
+         -V, --verbose                  Show lots of output
+         -v, --version                  Show this version
+         -p, --pretend                  dry run, show what would have happened
+         -x, --debug                    Show debugging output
+         -h, --help                     Show this help
+    """
