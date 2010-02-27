@@ -52,9 +52,22 @@ describe Yagl::Option do
   end
   describe "usage" do
     describe "inference" do
+      it "should have an empty short option" do
+        option = Yagl::Option.new('help', false)
+        option.short_option.should be_empty
+      end
       it "should infer a string from the option name" do
         option = Yagl::Option.new('help')
         option.infer.should == "Show this help"
+      end
+      it "should have a non-empty usage message" do
+        option = Yagl::Option.new('verbose', nil, false, "Show lots of output")
+        option.usage_msg.should_not be_empty
+        option.usage_msg.should == "Show lots of output"
+      end
+      it "should use a supplied usage_msg" do
+        option = Yagl::Option.new('verbose', nil, false, "Show lots of output")
+        option.infer.should == "Show lots of output"
       end
     end
     it "should describe itself" do
@@ -62,8 +75,10 @@ describe Yagl::Option do
       option.usage.should == "-h, --help                     Show this help"
     end
 
-    # it "should allow itself to be described" do
-    #   option = Yagl::Option.new('verbose', 'V', "Show lots of output")
-    # end
+    it "should allow itself to be described" do
+      option = Yagl::Option.new('verbose', 'V', false, "Show lots of output")
+      option.usage.should == "-V, --verbose                  Show lots of output"
+      
+    end
   end
 end

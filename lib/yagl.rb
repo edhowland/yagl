@@ -31,18 +31,23 @@ module Yagl
   end
 
   class Option
-    attr_accessor :long, :short, :required_arg
-    def initialize(long, short=nil, required_arg=false)
+    attr_accessor :long, :short, :required_arg, :usage_msg
+    def initialize(long, short=nil, required_arg=false, usage='')
       @short = short
       @long = long
       @short = @long[0] if short.nil?
       @required_arg = required_arg
+      @usage_msg = usage
     end
     def long_option
       "--#{@long}"
     end
     def short_option
-      "-#{@short}"
+      if @short
+        "-#{@short}"
+      else
+        ''
+      end
     end
     def to_a
       arry=[]
@@ -62,12 +67,20 @@ module Yagl
     end
     
     def infer
-      "Show this " + long
+      if usage_msg.empty?
+        'Show this ' + long
+      else
+        @usage_msg
+      end
+    end
+    
+    def format_ws
+        '                               '[0..-(long_option.length+short_option.length+3)] 
     end
     
     def usage
       to_a[0..-2].reverse.join(', ') +
-        '                     ' + infer
+        format_ws + infer
     end
   end
 end
