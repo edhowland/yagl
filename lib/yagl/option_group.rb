@@ -11,6 +11,23 @@ module Yagl
       @option_groups << option_group
     end
     
+    def each(&block)
+      @option_groups.each do |og|
+        og.each(&block)
+      end
+    end
+    
+    def format
+      StringIO.open do |s|
+        comma = ''
+        @option_groups.each do |og|
+          s << comma + og.format
+          comma = ",\n"
+        end
+        s.string
+      end
+    end
+    
     def to_s
       StringIO.open do |s|
         @option_groups.each do |option_group|
@@ -34,6 +51,22 @@ module Yagl
     
     def <<(option)
       options << option
+    end
+    
+    def each(&block)
+      options.each(&block)
+    end
+    
+    def format
+      str = StringIO.open do |s|
+        comma = ''
+        each do |opt|
+          s.print comma + opt.to_s
+          comma = ",\n"
+        end
+        s.string
+      end
+      str
     end
     
     def to_s

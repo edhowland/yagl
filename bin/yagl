@@ -1,10 +1,13 @@
 #!/usr/bin/env ruby
 # yagl - Yet Another Generator Language
+require 'rubygems'
 require 'getoptlong'
 require 'fileutils'
 require 'pathname'
 require 'erubis'
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__)) + '/../lib'
 require File.expand_path(File.dirname(__FILE__)) + '/../lib/yagl'
+
 
 include FileUtils
 
@@ -12,16 +15,23 @@ include FileUtils
 
 # options
 
-options = []
-options << Yagl::Option.new('force', nil, false, "force overwriting files, don't ask")
-options << Yagl::Option.new('skip', nil, false, 'skip file if it exists')
-options << Yagl::Option.new('quiet', nil, false, 'runs quietly, no output')
-options << Yagl::Option.new('verbose', 'V', false, 'Show lots of output')
-options << Yagl::Option.new('version')
-options << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
-options << Yagl::Option.new('debug', 'x', false, 'Show debugging output')
-options << Yagl::Option.new('help')
+templates = Yagl::OptionGroup.new('Template')
+templates << Yagl::Option.new('ruby', nil, false, 'install the ruby template')
+templates << Yagl::Option.new('ruby-19', false, false, 'install the ruby-19 template')
 
+generals = Yagl::OptionGroup.new
+generals << Yagl::Option.new('force', nil, false, "force overwriting files, don't ask")
+generals << Yagl::Option.new('skip', nil, false, 'skip file if it exists')
+generals << Yagl::Option.new('quiet', nil, false, 'runs quietly, no output')
+generals << Yagl::Option.new('verbose', 'V', false, 'Show lots of output')
+generals << Yagl::Option.new('version')
+generals << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
+generals << Yagl::Option.new('debug', 'x', false, 'Show debugging output')
+generals << Yagl::Option.new('help')
+
+meta = Yagl::MetaOptionGroup.new
+meta << templates
+meta << generals
 
 
 # target script (cmd)

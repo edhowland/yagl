@@ -1,5 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require "getoptlong"
+require "stringio"
 
 describe Yagl::Option do
   describe "long_option" do
@@ -100,17 +101,39 @@ describe Yagl::Option do
     describe "holding options" do
       before(:each) do
         @og = Yagl::OptionGroup.new
-      end
-      it "should hold some options" do
         @og << Yagl::Option.new('help')
         @og << Yagl::Option.new('version')
         @og << Yagl::Option.new('debug', 'x', false, 'Show debug output')
+      end
+      it "should hold some options" do
         @og.to_s.should == <<-EOD
   General options:
      -h, --help                     Show this help
      -v, --version                  Show this version
      -x, --debug                    Show debug output
         EOD
+      end
+      it "should generate GetOptLong arrays of options" do
+        str = StringIO.open do |s|
+          comma = ''
+          @og.each do |opt|
+            s.print comma + opt.to_s
+            comma = ",\n"
+          end
+          s.string + "\n"
+        end
+        str.should ==<<-EOD
+['--help', '-h', GetoptLong::NO_ARGUMENT],
+['--version', '-v', GetoptLong::NO_ARGUMENT],
+['--debug', '-x', GetoptLong::NO_ARGUMENT]
+            EOD
+      end
+      it "should format as GetOptLong array" do
+        @og.format.should == %Q{['--help', '-h', GetoptLong::NO_ARGUMENT],
+['--version', '-v', GetoptLong::NO_ARGUMENT],
+['--debug', '-x', GetoptLong::NO_ARGUMENT]}
+
+        
       end
     end
   end
@@ -126,27 +149,28 @@ describe Yagl::Option do
   General options:
       EOD
     end
-    it "should output a complete set of option groups with options" do
-      templates = Yagl::OptionGroup.new('Template')
-      templates << Yagl::Option.new('ruby', nil, false, 'install the ruby template')
-      templates << Yagl::Option.new('ruby-19', false, false, 'install the ruby-19 template')
+    describe "with complete OptionGroups" do
+      before(:each) do
+        templates = Yagl::OptionGroup.new('Template')
+        templates << Yagl::Option.new('ruby', nil, false, 'install the ruby template')
+        templates << Yagl::Option.new('ruby-19', false, false, 'install the ruby-19 template')
 
-      generals = Yagl::OptionGroup.new
-      generals << Yagl::Option.new('force', nil, false, "force overwriting files, don't ask")
-      generals << Yagl::Option.new('skip', nil, false, 'skip file if it exists')
-      generals << Yagl::Option.new('quiet', nil, false, 'runs quietly, no output')
-      generals << Yagl::Option.new('verbose', 'V', false, 'Show lots of output')
-      generals << Yagl::Option.new('version')
-      generals << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
-      generals << Yagl::Option.new('debug', 'x', false, 'Show debugging output')
-      generals << Yagl::Option.new('help')
-      
-      @mog << templates
-      @mog << generals
-      File.open('options1.txt', 'w+') do |f|
-        f.write(@mog.to_s)
+        generals = Yagl::OptionGroup.new
+        generals << Yagl::Option.new('force', nil, false, "force overwriting files, don't ask")
+        generals << Yagl::Option.new('skip', nil, false, 'skip file if it exists')
+        generals << Yagl::Option.new('quiet', nil, false, 'runs quietly, no output')
+        generals << Yagl::Option.new('verbose', 'V', false, 'Show lots of output')
+        generals << Yagl::Option.new('version')
+        generals << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
+        generals << Yagl::Option.new('debug', 'x', false, 'Show debugging output')
+        generals << Yagl::Option.new('help')
+
+        @mog << templates
+        @mog << generals
+        
       end
-      @mog.to_s.should == <<-EOD
+      it "should output a complete set of option groups with options" do
+        @mog.to_s.should == <<-EOD
   Template options:
      -r, --ruby                     install the ruby template
      --ruby-19                      install the ruby-19 template
@@ -159,8 +183,28 @@ describe Yagl::Option do
      -p, --pretend                  dry run, show what would have happened
      -x, --debug                    Show debugging output
      -h, --help                     Show this help
-      EOD
-      
+            EOD
+      end
+      it "should format as all option groups to GetOptLong arrays" do
+        @mog.format.should ==%Q{['--ruby', '-r', GetoptLong::NO_ARGUMENT],
+['--ruby-19', GetoptLong::NO_ARGUMENT],
+['--force', '-f', GetoptLong::NO_ARGUMENT],
+['--skip', '-s', GetoptLong::NO_ARGUMENT],
+['--quiet', '-q', GetoptLong::NO_ARGUMENT],
+['--verbose', '-V', GetoptLong::NO_ARGUMENT],
+['--version', '-v', GetoptLong::NO_ARGUMENT],
+['--pretend', '-p', GetoptLong::NO_ARGUMENT],
+['--debug', '-x', GetoptLong::NO_ARGUMENT],
+['--help', '-h', GetoptLong::NO_ARGUMENT]}
+      end
+      it "should iterate over every option" do
+        iter=0
+        @mog.each do |opt|
+          iter += 1
+          opt.should be_kind_of Yagl::Option
+        end
+        iter.should_not be_zero
+      end
     end
   end
 end

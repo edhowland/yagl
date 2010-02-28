@@ -10,30 +10,22 @@ require "yagl"
 $usage=%Q{
 Usage:
   <%= cmd %> [options] destination
-  General options:
-<% options.each do |option| %>
-     <%= option.usage %>  
-<% end %>
+<%= meta.to_s %>
 }
 
-
-# ['--help', '-h', GetoptLong::NO_ARGUMENT], 
-
 opts = GetoptLong.new(
-  <% options.each_with_index do |opt, i| %>
-  <%= opt.to_s %><%= (',' unless options.size-1 == i)  %>
-  <% end %>
+  <%= meta.format %>
 )
 
 begin
   opts.each do |opt, arg|
     case opt
-    <% options.each do |opt| %>
+    <% meta.each do |opt| %>
     when '<%= opt.long_option %>'
-      die "Ok\n" + $usage
+      die $usage
     <% end %>
     else
-      die 'BAD' + $usage
+      die $usage
     end
   end
 rescue GetoptLong::InvalidOption => e

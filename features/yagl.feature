@@ -27,9 +27,10 @@ Feature: something something
     And I run local command "bin/mygem --help"
     Then the output should be
     """
+    
     Usage:
       mygem [options] destination
-      Template Options:
+      Template options:
          -r, --ruby                     install the ruby template
          --ruby-19                      install the ruby-19 template
       General options:
@@ -41,4 +42,6 @@ Feature: something something
          -p, --pretend                  dry run, show what would have happened
          -x, --debug                    Show debugging output
          -h, --help                     Show this help
+
+
     """

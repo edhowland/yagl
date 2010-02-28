@@ -6,55 +6,63 @@ require 'getoptlong'
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../../../lib')
 require "yagl"
 
+
 $usage=%Q{
 Usage:
   mygem [options] destination
+  Template options:
+     -r, --ruby                     install the ruby template
+     --ruby-19                      install the ruby-19 template
   General options:
-     -f, --force                    force overwriting files, don't ask  
-     -s, --skip                     skip file if it exists  
-     -q, --quiet                    runs quietly, no output  
-     -V, --verbose                  Show lots of output  
-     -v, --version                  Show this version  
-     -p, --pretend                  dry run, show what would have happened  
-     -x, --debug                    Show debugging output  
-     -h, --help                     Show this help  
+     -f, --force                    force overwriting files, don't ask
+     -s, --skip                     skip file if it exists
+     -q, --quiet                    runs quietly, no output
+     -V, --verbose                  Show lots of output
+     -v, --version                  Show this version
+     -p, --pretend                  dry run, show what would have happened
+     -x, --debug                    Show debugging output
+     -h, --help                     Show this help
+
 }
 
-
-# ['--help', '-h', GetoptLong::NO_ARGUMENT], 
-
 opts = GetoptLong.new(
-  ['--force', '-f', GetoptLong::NO_ARGUMENT],
-  ['--skip', '-s', GetoptLong::NO_ARGUMENT],
-  ['--quiet', '-q', GetoptLong::NO_ARGUMENT],
-  ['--verbose', '-V', GetoptLong::NO_ARGUMENT],
-  ['--version', '-v', GetoptLong::NO_ARGUMENT],
-  ['--pretend', '-p', GetoptLong::NO_ARGUMENT],
-  ['--debug', '-x', GetoptLong::NO_ARGUMENT],
-  ['--help', '-h', GetoptLong::NO_ARGUMENT]
+  ['--ruby', '-r', GetoptLong::NO_ARGUMENT],
+['--ruby-19', GetoptLong::NO_ARGUMENT],
+['--force', '-f', GetoptLong::NO_ARGUMENT],
+['--skip', '-s', GetoptLong::NO_ARGUMENT],
+['--quiet', '-q', GetoptLong::NO_ARGUMENT],
+['--verbose', '-V', GetoptLong::NO_ARGUMENT],
+['--version', '-v', GetoptLong::NO_ARGUMENT],
+['--pretend', '-p', GetoptLong::NO_ARGUMENT],
+['--debug', '-x', GetoptLong::NO_ARGUMENT],
+['--help', '-h', GetoptLong::NO_ARGUMENT]
 )
 
 begin
   opts.each do |opt, arg|
     case opt
+    when '--ruby'
+      die $usage
+    when '--ruby-19'
+      die $usage
     when '--force'
-      die "Ok\n" + $usage
+      die $usage
     when '--skip'
-      die "Ok\n" + $usage
+      die $usage
     when '--quiet'
-      die "Ok\n" + $usage
+      die $usage
     when '--verbose'
-      die "Ok\n" + $usage
+      die $usage
     when '--version'
-      die "Ok\n" + $usage
+      die $usage
     when '--pretend'
-      die "Ok\n" + $usage
+      die $usage
     when '--debug'
-      die "Ok\n" + $usage
+      die $usage
     when '--help'
-      die "Ok\n" + $usage
+      die $usage
     else
-      die 'BAD' + $usage
+      die $usage
     end
   end
 rescue GetoptLong::InvalidOption => e
