@@ -47,7 +47,7 @@ end
 
 include FileUtils
 
-# open resulting file: Yaglfile
+# open file: Yaglfile
 begin
   # important parsing going on here
   # require 'Yaglfile'
