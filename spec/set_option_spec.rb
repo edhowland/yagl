@@ -1,29 +1,5 @@
 require File.expand_path(File.dirname(__FILE__)) +'/spec_helper'
 
-module Yagl
-  module SetOption
-    def imperative(arg)
-      (arg+'!').to_sym
-    end
-    def predicate(arg)
-      (arg+'?').to_sym
-    end
-    def create_method(name, &block)
-      self.class.send(:define_method, name, &block)
-    end
-    def delete_method(name)
-      self.class.send(:remove_method, name)
-    end
-    def set!(opt, truth=true)
-      create_method(imperative(opt)) do
-        delete_method(predicate(opt))
-        create_method(predicate(opt)) {true}
-        true
-      end
-      create_method(predicate(opt)) {truth}
-    end
-  end
-end
 
 describe "set_option" do
   include Yagl::SetOption
@@ -68,15 +44,6 @@ describe "set_option" do
   end
 end
 
-module Yagl
-  module SetOption
-    module Parser
-      def parse(opt)
-        (opt[1..-1].split(/-/))[1..-1].reverse.map {|o| o == 'no' ? true : o}
-      end
-    end
-  end
-end
 
 describe "Yagl::SetOption::Parser" do
   include Yagl::SetOption::Parser
@@ -93,22 +60,6 @@ describe "Yagl::SetOption::Parser" do
 end
 
 # integration test
-module Yagl
-  module SetOption
-    module SetMethod
-      include Yagl::SetOption::Parser
-      include Yagl::SetOption
-      def methods_from_option(opt)
-        option, no_option = parse opt
-        if no_option
-          set! option, false
-        else
-          set! option
-        end
-      end
-    end
-  end
-end
 
 describe "MethodSetter" do
   include Yagl::SetOption::SetMethod
