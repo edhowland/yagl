@@ -1,46 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-module Yagl
-  module DSL
-    module Commands
-      class Storage
-        @@commands = []
-        def self.clear
-          @@commands.clear
-        end
-        def self.<<(command)
-          @@commands << command
-        end
-        def self.length
-          @@commands.length
-        end
-        def [](index)
-          @@comands[index]
-        end
-        def self.first
-          @@commands.first
-        end
-        def self.last
-          @@commands.last
-        end
-      end
-      
-      def option(opt, *args)
-        arg_required = false
-        short_option = nil
-        usage = ''
-        if args[0].kind_of? Array
-          arg_required = args[0][0] == :required 
-        elsif args[0].kind_of? Symbol
-          short_option = args[0].to_s
-        elsif args[0].kind_of? String
-          usage = args[0]
-        end
-        Storage << Yagl::Option.new(opt.to_s, short_option, arg_required, usage)
-      end
-    end
-  end
-end
 
 describe "DSL" do
   include Yagl::DSL::Commands
@@ -74,5 +33,25 @@ describe "DSL" do
   it "should take a description" do
     option :help, "Show this help"
     Storage.last.usage_msg.should == 'Show this help'
+  end
+  it "should take short, required" do
+    option :url, :U, [:required]
+    opt = Storage.last
+    opt.short_option.should == '-U'
+    opt.required_arg.should be_true
+  end
+  it "should take required and usage" do
+    option :url, [:required], "The site to search"
+    opt = Storage.last
+    opt.short_option.should == '-u'
+    opt.required_arg.should be_true
+    opt.usage_msg.should == 'The site to search'
+  end
+  it "should take all three" do
+    option :url, :U, [:required], "The site to search"
+    opt = Storage.last
+    opt.short_option.should == '-U'
+    opt.required_arg.should be_true
+    opt.usage_msg.should == 'The site to search'
   end
 end
