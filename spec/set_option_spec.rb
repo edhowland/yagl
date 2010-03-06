@@ -1,7 +1,7 @@
 require File.expand_path(File.dirname(__FILE__)) +'/spec_helper'
 
 module Yagl
-  class SetOption
+  module SetOption
     def imperative(arg)
       (arg+'!').to_sym
     end
@@ -18,26 +18,24 @@ module Yagl
 end
 
 describe "set_option" do
-  before(:each) do
-    @option_setter = Yagl::SetOption.new
-  end
+  include Yagl::SetOption
   it "should return imperative :xxy!" do
-    @option_setter.imperative('xxy').should == :xxy!
+    imperative('xxy').should == :xxy!
   end
   it "should return predicate zzx?" do
-    @option_setter.predicate('xxy').should == :xxy?
+    predicate('xxy').should == :xxy?
   end
   it "should define a opt! method" do
-    @option_setter.set! "opt"
-    Yagl::SetOption.should be_method_defined(:opt!)
+    set! "opt"
+    self.class.should be_method_defined(:opt!)
   end
   it "should define a mod! method" do
-    @option_setter.set! "mod"
-    Yagl::SetOption.should be_method_defined(:mod!)
+    set! "mod"
+    self.class.should be_method_defined(:mod!)
   end
   it "should return true" do
-    @option_setter.set! "green"
-    @option_setter.green!.should be_true
+    set! "green"
+    green!.should be_true
   end
   
 end
