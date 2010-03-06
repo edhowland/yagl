@@ -17,5 +17,10 @@ Then /^the output should be$/ do |string|
   $output.should == string
 end
 
+Then /^the output should be "([^\"]*)"$/ do |string|
+  $output.should == string
+end
+
+
 
 

@@ -8,14 +8,14 @@ Feature: Option command
   And I have a folder "bin"
   And I have a file "Yaglfile" with command "<command>" and args "<args>"
   When I run "yagl --verbose --pretend ."
-  Then I the output should be "<output>"
+  Then the output should be "<output>"
 
   Scenarios:
-    |command|args|outout|
-    |option|:dummy|-d, --[no]-dummy ""|
-    |option|:imbecil, :I|-I --[no]-imbecil ""|
-    |option|:moron, "As in non oxy-"|-m, --[no]-moron, "As in non oxy-""|
-    |option|:witless, [:required]|-w, --witless, ""|
+    |command|args|output|
+    |option|:dummy|-d, --[no]-dummy|
+    |option|:imbecil, :I|-I --[no]-imbecil|
+    |option|:moron|-m, --[no]-moron|
+    |option|:witless, [:required]|-w, --witless|
   
 
   

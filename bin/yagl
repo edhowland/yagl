@@ -14,9 +14,14 @@ require File.expand_path(File.dirname(__FILE__)) + '/../lib/yagl'
 yagloptions = Yagl::OptionGroup.new
 yagloptions << Yagl::Option.new('verbose', 'V', false, 'print out generated option usage')
 yagloptions << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
+antioptions = Yagl::OptionGroup.new
+antioptions << Yagl::Option.new('no-verbose', false, false, 'print out generated option usage')
+antioptions << Yagl::Option.new('no-pretend', false, false, 'dry run, show what would have happened')
+
 
 metayagl = Yagl::MetaOptionGroup.new
 metayagl << yagloptions
+metayagl << antioptions
 yagl_array = []
 metayagl.each do |opt|
  yagl_array << opt.to_a
@@ -24,48 +29,39 @@ end
 
 opts = GetoptLong.new(*yagl_array)
 
-def parse_opt(opt)
-  (opt[1..-1].split(/-/))[1..-1].reverse.map {|o| o == 'no' ? true : o}
+include Yagl::SetOption::SetMethod
+# set initial state (not verbose and not pretending)
+antioptions.each do |opt|
+  methods_from_option opt.long_option
 end
 
-module OwnOptions
-
-  def set_options(opts)
-    begin
-      opts.each do |org_opt, arg|
-        opt, not_option = parse_opt org_opt
-     
-        define_method "#{opt}!".to_sym do
-          remove_method "#{opt}?".to_sym
-          define_method "#{opt}?".to_sym {true}
-        end
-        if not_option
-          remove_method "#{opt}?".to_sym
-          define_method "#{opt}?".to_sym {false}
-        else
-          send "#{opt}!"
-        end
-      end
-    rescue GetoptLong::InvalidOption => e
-      die e.message
-    end
+# set passed options
+begin
+  opts.each do |opt, arg|
+    methods_from_option opt
   end
+rescue GetoptLong::InvalidOption => e
+  die e.message
 end
 
-## test
-include OwnOptions
-set_options opts
-if pretend?
-  die "pretending"
-else
-  die "not pretending"
-end
-
-## /test
 
 include FileUtils
 
-# fake out for cucumber
+# open resulting file: Yaglfile
+begin
+  # important parsing going on here
+  # require 'Yaglfile'
+  src=''
+  File.open('Yaglfile') do |f|
+    src=f.read
+  end
+  eval src
+rescue Exception => e
+  die e.message
+end
+
+
+# fake out for cucumber yagl.feature
 
 # options
 
