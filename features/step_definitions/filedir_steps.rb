@@ -20,11 +20,18 @@ Then /^I have "([^\"]*)"$/ do |arg1|
   fail "#{arg1} doesn't exist" unless File.exists?(arg1)
 end
 
-Given /^I have a file "([^\"]*)" with contents "([^\"]*)"$/ do |arg1, arg2|
-  File.open(arg1,'w+') do |f|
-    f.write(arg2)
+Given /^I have a file "([^\"]*)" with contents "([^\"]*)"$/ do |file, contents|
+  File.open(file,'w+') do |f|
+    f.write(contents)
   end
 end
+
+Given /^I have a file "([^\"]*)" with command "([^\"]*)" and args "([^\"]*)"$/ do |file, command, args|
+  File.open(file,'w+') do |f|
+    f.write(command + " " + args)
+  end
+end
+
 
 
 

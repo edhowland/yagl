@@ -1,5 +1,7 @@
 When /^I run "([^\"]*)"$/ do |arg1|
-  fail("command #{arg1} failed |#{$?}|") unless system(dirs.first + '/bin/' + arg1)
+  fail("command #{arg1} failed |#{$?}|") unless IO.popen(dirs.first + '/bin/' + arg1) do |p|
+    $output = p.read
+  end
 end
 
 $output = ''
