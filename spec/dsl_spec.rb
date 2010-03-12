@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require "getoptlong"
 
 
 describe "DSL" do
@@ -53,5 +54,38 @@ describe "DSL" do
     opt.short_option.should == '-U'
     opt.required_arg.should be_true
     opt.usage_msg.should == 'The site to search'
+  end
+  describe "binary options" do
+    it "should be a binary, required option" do
+      option :moron, [:required, :binary]
+      opt = Storage.last
+      opt.required_arg.should be_true
+      opt.should be_binary
+    end
+    it "should be a binary non-required option" do
+      option :moron, [:binary]
+      opt = Storage.last
+      opt.required_arg.should be_false
+      opt.should be_binary
+    end
+    it "should be a required only option" do
+      option :moron, [:required]
+      opt = Storage.last
+      opt.required_arg.should be_true
+      opt.should_not be_binary
+    end
+    it "should be a non-required, non-binary option" do
+      option :moron
+      opt = Storage.last
+      opt.required_arg.should be_false
+      opt.should_not be_binary
+    end
+    it "should have a --[no]- descri" do
+      option :moron, [:binary]
+      opt = Storage.last
+      opt.usage.should match  %r{^\-m, \-\-\[no\-\]moron}
+
+    end
+    
   end
 end

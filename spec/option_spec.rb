@@ -85,6 +85,11 @@ describe Yagl::Option do
       option = Yagl::Option.new('debug', false, false)
       option.usage.should == '--debug                        Show this debug'
     end
+    
+    it "should have usage_options == -r, --ri" do
+      option = Yagl::Option.new('ri')
+      option.usage_options.should == '-r, --ri'
+    end
   end
   
   describe Yagl::OptionGroup do

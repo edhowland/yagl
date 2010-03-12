@@ -1,6 +1,7 @@
 require "yagl/discoverer"
 require "yagl/copier"
 require "yagl/option"
+require "yagl/binary_option"
 require "yagl/option_group"
 require "yagl/set_option"
 require "yagl/dsl"

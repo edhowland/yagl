@@ -46,20 +46,42 @@ end
 
 
 include FileUtils
+include Yagl::DSL::Commands
+
+# target script (cmd)
+cmd=(File.basename(Dir.pwd))
+target=ARGV[0] + '/bin/' + cmd
+
 
 # open file: Yaglfile
-begin
-  # important parsing going on here
-  # require 'Yaglfile'
-  src=''
-  File.open('Yaglfile') do |f|
-    src=f.read
+if File.exists?('Yaglfile') or File.exists?(cmd + '.ygl')
+  # eventually take option parameter over these, else prefer Yaglfile
+  srcfile = if File.exists?('Yaglfile')
+    'Yaglfile'
+  else
+    cmd + '.ygl'
   end
-  eval src
-rescue Exception => e
-  die e.message
+  begin
+    # important parsing going on here
+    src=''
+    File.open(srcfile) do |f|
+      src=f.read
+    end
+    eval src
+  rescue Exception => e
+    die e.message
+  end
 end
 
+if verbose?
+  Storage.each do |opt|
+    puts opt.usage
+  end
+end
+
+if pretend?
+  die # "exiting before creation"
+end
 
 # fake out for cucumber yagl.feature
 
@@ -84,9 +106,6 @@ meta << templates
 meta << generals
 
 
-# target script (cmd)
-cmd=(File.basename(Dir.pwd))
-target=ARGV[0] + '/bin/' + cmd
 
 discoverer=Yagl::Discoverer.new
 template_root=discoverer.templates

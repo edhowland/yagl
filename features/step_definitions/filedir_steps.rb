@@ -26,6 +26,13 @@ Given /^I have a file "([^\"]*)" with contents "([^\"]*)"$/ do |file, contents|
   end
 end
 
+Given /^I have a file "([^\"]*)" with contents$/ do |file, contents|
+  File.open(file,'w+') do |f|
+    f.write(contents)
+  end
+
+end
+
 Given /^I have a file "([^\"]*)" with command "([^\"]*)" and args "([^\"]*)"$/ do |file, command, args|
   File.open(file,'w+') do |f|
     f.write(command + " " + args)

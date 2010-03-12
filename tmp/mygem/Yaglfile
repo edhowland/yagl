@@ -1,1 +1,1 @@
-option :witless, [:required]
+template :ruby_19

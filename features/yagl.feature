@@ -3,7 +3,7 @@ Feature: something something
   As a user I would like to generate a generator
   So that I have a generator script
 
-  Scenario: Empty or missing Yaglfile
+  Scenario: Missing Yaglfile
     Given I am in the "mygem" folder
     And I have a folder "bin"
     And I have a folder "templates"
@@ -22,7 +22,11 @@ Feature: something something
     And I have a folder "templates/ruby-19"
     And I have a file "templates/ruby/file.rb"
     And I have a file "templates/ruby-19/file.rb"
-    And I have a file "Yaglfile" with contents "template :ruby_19"
+    And I have a file "Yaglfile" with contents
+    """
+    template :ruby_19
+    
+    """
     When I run "yagl ."
     And I run local command "bin/mygem --help"
     Then the output should be
