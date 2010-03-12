@@ -1,1 +1,1 @@
-template :ruby_19
+option :witless, [:argument]

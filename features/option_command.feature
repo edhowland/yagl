@@ -19,7 +19,7 @@ Feature: Option command
     |option|:dummy|-d, --dummy                    Show this dummy|
     |option|:imbecil, :I, [:binary]|-I, --[no-]imbecil                  Show this imbecil|
     |option|:moron, [:binary]|-m, --[no-]moron                    Show this moron|
-    |option|:witless, [:required]|-w, --witless                  Show this witless|
+    |option|:witless, [:argument]|-w, --witless UITLESS          Show this witless|
   
 
   
