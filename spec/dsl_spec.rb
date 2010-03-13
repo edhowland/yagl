@@ -84,7 +84,6 @@ describe "DSL" do
       option :moron, [:binary]
       opt = Storage.last
       opt.usage.should match  %r{^\-m, \-\-\[no\-\]moron}
-
     end
     
   end

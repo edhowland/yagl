@@ -33,7 +33,7 @@ module Yagl
         usage = ''
         while (arg = args.pop)
           if arg.kind_of? Array
-            arg_required = arg.include?(:required)
+            arg_required = arg.include?(:argument) || arg.include?(:required)
             binary = arg.include?(:binary)
           elsif arg.kind_of? Symbol
             short_option = arg.to_s

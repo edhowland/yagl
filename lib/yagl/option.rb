@@ -9,6 +9,7 @@ module Yagl
       @usage_msg = usage
     end
     def binary?; false;  end
+    def argument?; @required_arg; end
     def long_option
       "--#{@long}"
     end
@@ -44,15 +45,20 @@ module Yagl
       end
     end
     
+    def arg_usage
+      required_arg ? ' ' + @long.upcase : ''
+    end
+    
     def format_ws
-      ' ' * (31 - (long_option.length+short_option.length + (@short ? 2 : 0)))
+      ' ' * (31 - arg_usage.length - (long_option.length+short_option.length + (@short ? 2 : 0)))
     end
     
     def usage_options
       to_a[0..-2].reverse.join(', ')
     end
+    
     def usage
-       usage_options + format_ws + infer
+       usage_options + arg_usage + format_ws + infer
     end
   end
 end
