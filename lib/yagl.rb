@@ -10,3 +10,6 @@ def die(msg=nil, failed=false)
   puts msg unless msg.nil?
   exit(failed ? -1 : 0)
 end
+
+class String; def blank?; empty?; end; end
+class NilClass; def blank?; true; end; end

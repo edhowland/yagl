@@ -40,9 +40,27 @@ describe "set_option" do
     green?.should be_false
     green!
     green?.should be_true
-    
   end
+
+  describe "creating accessors" do
+    it "should create get accessor with name of argument" do
+      create_accessors! :color, 'green' 
+      color.should == 'green'
+    end
+    def test
+      
+    end
+    it "should create set accessor with name of argument" do
+      create_accessors! :color, 'green'
+      self.class.method_defined?(:test).should be_true
+      self.class.method_defined?(:color=).should be_true
+      color=('red')
+      color.should == 'red'
+    end
+  end
+
 end
+
 
 
 describe "Yagl::SetOption::Parser" do
@@ -81,4 +99,5 @@ describe "MethodSetter" do
     green!
     green?.should be_true
   end
+  
 end
