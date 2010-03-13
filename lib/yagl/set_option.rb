@@ -23,10 +23,10 @@ module Yagl
       create_method(predicate(opt)) {truth}
     end
     def create_accessors!(opt, value)
-      create_method(opt) {value}
+      create_method(opt.to_sym) {value}
       create_method(symbolize(opt.to_s, '=')) do |value|
-        delete_method(opt)
-        create_method(opt) {value}
+        delete_method(opt.to_sym)
+        create_method(opt.to_sym) {value}
       end
     end
   end

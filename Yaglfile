@@ -1,0 +1,14 @@
+# Yaglfile
+# yagl's own Yaglfile (dog food)
+# defines options and templates
+
+option :source, [:argument], 'The source erubus template to use'
+option :output, [:argument], 'The output file'
+option :verbose, :V, 'Show lots of output'
+option :pretend, 'dry-run, do not do anything, but show what would have happened'
+option :load_path, [:argument], 'prepend LOAD_PATH to $LOAD_pATH'
+option :help
+
+$script=%Q{
+die $usage if help?
+}

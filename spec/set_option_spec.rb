@@ -47,15 +47,18 @@ describe "set_option" do
       create_accessors! :color, 'green' 
       color.should == 'green'
     end
-    def test
-      
-    end
     it "should create set accessor with name of argument" do
       create_accessors! :color, 'green'
-      self.class.method_defined?(:test).should be_true
-      self.class.method_defined?(:color=).should be_true
+      self.class.should be_method_defined(:color=)
       color=('red')
       color.should == 'red'
+    end
+    it "should create accessors with strings" do
+      create_accessors! 'flavor', 'spicy'
+      flavor.should == 'spicy'
+      self.class.should be_method_defined(:flavor=)
+      flavor = 'sweet'
+      flavor.should == 'sweet'
     end
   end
 

@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+# <%= cmd %>
+require "rubygems"
+require 'getoptlong'
+<% if load_path? %>
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/<%= load_path %>')
+<% end %>
+require "yagl"
+
+$usage=%Q{
+Usage:
+  <%= cmd %> [options] destination
+<%= meta.to_s %>
+}
+
+opts = GetoptLong.new(
+  <%= meta.format %>
+)
+
+include Yagl::SetOption::SetMethod
+# set defaults
+group = Yagl::OptionGroup.new 
+<% meta.each do |opt| %>
+  group << Yagl::Option.new('<%= opt.long %>')
+<% end %>
+
+
+group.each do |opt|
+  default_from_option opt.long_option
+end
+
+
+begin
+  opts.each do |opt, arg|
+    methods_from_option opt
+    accessors_from_option opt, arg unless arg.blank?
+  end
+rescue GetoptLong::InvalidOption => e
+  die e.message
+end
+
+<%= $script %>
+

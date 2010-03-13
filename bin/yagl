@@ -6,7 +6,8 @@ require 'fileutils'
 require 'pathname'
 require 'erubis'
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__)) + '/../lib'
-require File.expand_path(File.dirname(__FILE__)) + '/../lib/yagl'
+# require File.expand_path(File.dirname(__FILE__)) + '/../lib/yagl'
+require 'yagl'
 
 # yagl's own options. Almost eating our own dogfood.
 
@@ -14,14 +15,15 @@ require File.expand_path(File.dirname(__FILE__)) + '/../lib/yagl'
 yagloptions = Yagl::OptionGroup.new
 yagloptions << Yagl::Option.new('verbose', 'V', false, 'print out generated option usage')
 yagloptions << Yagl::Option.new('pretend', nil, false, 'dry run, show what would have happened')
-antioptions = Yagl::OptionGroup.new
-antioptions << Yagl::Option.new('no-verbose', false, false, 'print out generated option usage')
-antioptions << Yagl::Option.new('no-pretend', false, false, 'dry run, show what would have happened')
+yagloptions << Yagl::Option.new('output', nil, true, 'output of yagl command')
+yagloptions << Yagl::Option.new('source', nil, true, 'source erubis script')
+yagloptions << Yagl::Option.new('load_path', nil, true, 'load path expression if needed')
+
 
 
 metayagl = Yagl::MetaOptionGroup.new
 metayagl << yagloptions
-metayagl << antioptions
+
 yagl_array = []
 metayagl.each do |opt|
  yagl_array << opt.to_a
@@ -31,27 +33,33 @@ opts = GetoptLong.new(*yagl_array)
 
 include Yagl::SetOption::SetMethod
 # set initial state (not verbose and not pretending)
-antioptions.each do |opt|
-  methods_from_option opt.long_option
+yagloptions.each do |opt|
+  default_from_option opt.long_option
 end
 
 # set passed options
 begin
   opts.each do |opt, arg|
     methods_from_option opt
+    accessors_from_option opt, arg unless arg.blank?
   end
 rescue GetoptLong::InvalidOption => e
   die e.message
 end
 
+# at this point, can process any passed options
 
 include FileUtils
 include Yagl::DSL::Commands
 
 # target script (cmd)
 cmd=(File.basename(Dir.pwd))
-target=ARGV[0] + '/bin/' + cmd
 
+if output?
+  target = output
+else
+  target=ARGV[0] + '/bin/' + cmd 
+end
 
 # open file: Yaglfile
 if File.exists?('Yaglfile') or File.exists?(cmd + '.ygl')
@@ -71,16 +79,16 @@ if File.exists?('Yaglfile') or File.exists?(cmd + '.ygl')
   rescue Exception => e
     die e.message
   end
+else
+  die 'No Yaglfile or ' + cmd + '.ygl found'
 end
 
 if verbose?
   Storage.each do |opt|
     puts opt.usage
   end
-end
-
-if pretend?
-  die # "exiting before creation"
+else
+  puts 'not verbose'
 end
 
 # fake out for cucumber yagl.feature
@@ -102,19 +110,33 @@ generals << Yagl::Option.new('debug', 'x', false, 'Show debugging output')
 generals << Yagl::Option.new('help')
 
 meta = Yagl::MetaOptionGroup.new
-meta << templates
-meta << generals
+# meta << templates
+# meta << generals
 
-
+yaglog = Yagl::OptionGroup.new('Standard')
+Storage.each do |opt|
+  yaglog << opt
+end
+meta << yaglog
 
 discoverer=Yagl::Discoverer.new
 template_root=discoverer.templates
 
-erubus=File.read(File.expand_path(File.dirname(__FILE__)) +  '/../template/target.rb.eruby')
-eruby = Erubis::Eruby.new(erubus)    # create Eruby object
-
-File.open(target, "w+") do |f|
-  f.write eruby.result(binding())
+if source?
+  erubus = File.read(source)
+else
+  erubus=File.read(File.expand_path(File.dirname(__FILE__)) +  '/../template/target.rb.eruby')
 end
 
-chmod(0755, target)
+
+eruby = Erubis::Eruby.new(erubus)    # create Eruby object
+result = eruby.result(binding())
+
+unless pretend?
+  File.open(target, "w+") do |f|
+    f.write result
+  end 
+  chmod(0755, target)
+else
+  puts "Would create: \n" + result if verbose?
+end
