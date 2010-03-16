@@ -1,2 +1,2 @@
 require "dsl/commands"
-require "dsl/parser"
+require "dsl/script"

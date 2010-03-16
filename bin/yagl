@@ -61,6 +61,11 @@ else
   target=ARGV[0] + '/bin/' + cmd 
 end
 
+# fake out script tags for coming eval
+def script(tag, &block)
+end
+include Yagl::DSL::MethodBody
+
 # open file: Yaglfile
 if File.exists?('Yaglfile') or File.exists?(cmd + '.ygl')
   # eventually take option parameter over these, else prefer Yaglfile
@@ -69,16 +74,19 @@ if File.exists?('Yaglfile') or File.exists?(cmd + '.ygl')
   else
     cmd + '.ygl'
   end
-  begin
+  # begin
     # important parsing going on here
     src=''
     File.open(srcfile) do |f|
       src=f.read
     end
     eval src
-  rescue Exception => e
-    die e.message
-  end
+    # build script's methods
+    scr = Yagl::DSL::Script.new(src)
+    create_methods!(scr.hash)
+  # rescue Exception => e
+  #   die e.message
+  # end
 else
   die 'No Yaglfile or ' + cmd + '.ygl found'
 end
