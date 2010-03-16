@@ -39,4 +39,27 @@ describe "DSL Parser" do
   it "should associate block with definitions" do
     Yagl::DSL::Parser.definitions[0].last.should be_kind_of Array
   end
+  describe "pos?" do
+    it "should detect a position" do
+      @parser.pos?([1,0]).should be_true
+    end
+    it "should be false for larger sexps" do
+      @parser.pos?([1,0, [:a]]).should be_false
+    end
+    it "should be false for non arrays" do
+      @parser.pos?(1).should be_false
+    end
+    it "should be false if length != 2" do
+      @parser.pos?([]).should be_false
+      @parser.pos?([1]).should be_false
+      @parser.pos?([1,2,3]).should be_false
+    end
+    it "should be false for first part being non Fixnum" do
+      @parser.pos?([:a,1]).should be_false
+    end
+    it "should be false for last part not being Fixnum" do
+      @parser.pos?([1,'x']).should be_false
+    end
+    
+  end
 end

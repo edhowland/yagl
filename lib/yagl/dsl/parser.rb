@@ -11,6 +11,13 @@ module Yagl
         @block_stack = []
         super src
       end
+      def pos?(sexp)
+        sexp.kind_of?(Array) and 
+          sexp.length == 2 and
+          sexp.first.kind_of? Fixnum and sexp.last.kind_of? Fixnum
+      end
+      
+      # parser event handlers
       def on_program(*args)
         @@definitions.reject! {|e| e.first != :script}  
       end
@@ -28,7 +35,7 @@ module Yagl
         @@definitions << [ident[1].to_sym]
       end
       def on_do_block(*args)
-        pp args
+        # pp args
         @block_stack << args
       end
       
@@ -40,9 +47,9 @@ module Yagl
     module Autorun
     include Yagl::SetOption
     def create_methods!
-      puts "Parser.defs"
-      pp Parser.definitions
-      puts "----"
+      # puts "Parser.defs"
+      # pp Parser.definitions
+      # puts "----"
       Parser.definitions.each do |definition|
         if definition.first == :script
           create_method(definition[1]) {''}
