@@ -9,6 +9,17 @@ option :pretend, 'dry-run, do not do anything, but show what would have happened
 option :load_path, [:argument], 'prepend LOAD_PATH to $LOAD_pATH'
 option :help
 
-$script=%Q{
-die $usage if help?
-}
+# script task :autorun is the default. Any other
+# name will be output at a named place in the erubus
+# template:
+# script :builder do ... end
+# <%= builder %>
+
+script :autorun do 
+  die $usage if help?
+  if verbose?
+    puts 'verbose output'
+  end
+  die if pretend?
+end
+

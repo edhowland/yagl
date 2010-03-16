@@ -39,6 +39,10 @@ Given /^I have a file "([^\"]*)" with command "([^\"]*)" and args "([^\"]*)"$/ d
   end
 end
 
+Then /^I should have a file "([^\"]*)" with contents$/ do |file, contents|
+  File.read(file).should == contents
+end
+
 
 
 
