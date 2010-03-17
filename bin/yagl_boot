@@ -121,7 +121,7 @@ meta = Yagl::MetaOptionGroup.new
 # meta << templates
 # meta << generals
 
-yaglog = Yagl::OptionGroup.new('Standard')
+yaglog = Yagl::OptionGroup.new
 Storage.each do |opt|
   yaglog << opt
 end
