@@ -45,3 +45,35 @@ script :autorun do
   vputs 'ERubis source ', source
 end
 
+script :parse_yaglfile do
+  src=''
+  File.open(yaglsrc) do |f|
+    src=f.read
+  end
+  eval src
+  scr = Yagl::DSL::Script.new(src)
+  create_methods!(scr.hash)
+
+  meta = Yagl::MetaOptionGroup.new
+  yaglog = Yagl::OptionGroup.new
+  Storage.each do |opt|
+    yaglog << opt
+  end
+  meta << yaglog
+end
+
+script :process_templates do
+  eruby = Erubis::Eruby.new(File.read(source))    # create Eruby object
+  result = eruby.result(binding())
+
+  vputs 'Writing ', target
+  
+  unless pretend?
+    File.open(target, "w+") do |f|
+      f.write result
+    end 
+    chmod(0755, target)
+  end
+  vputs 'Done'
+end
+

@@ -2,8 +2,14 @@
 # yagl
 require "rubygems"
 require 'getoptlong'
+require 'erubis'
+require 'fileutils'
+include FileUtils
+
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/lib')
 require "yagl"
+include Yagl::SetOption::SetMethod
+include Yagl::DSL::Commands
 include Yagl::DSL::MethodBody
 
 
@@ -78,5 +84,38 @@ vputs 'Template: ', template_root
 source = source? ? source : template_root + '/yagl.eruby'
 die source + 'does not exist' unless File.exists?(source)
 vputs 'ERubis source ', source
+
+
+# fake out script method
+def script(tag, &block); end
+
+src=''
+File.open(yaglsrc) do |f|
+    src=f.read
+  end
+eval src
+scr = Yagl::DSL::Script.new(src)
+create_methods!(scr.hash)
+meta = Yagl::MetaOptionGroup.new
+yaglog = Yagl::OptionGroup.new
+Storage.each do |opt|
+    yaglog << opt
+  end
+meta << yaglog
+
+
+# some logic might fo here to skip template processing
+# this is more for the other template (target.eruby)
+
+eruby = Erubis::Eruby.new(File.read(source))
+result = eruby.result(binding())
+vputs 'Writing ', target
+unless pretend?
+    File.open(target, "w+") do |f|
+      f.write result
+    end 
+    chmod(0755, target)
+  end
+vputs 'Done'
 
 

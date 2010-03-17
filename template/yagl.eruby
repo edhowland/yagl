@@ -2,10 +2,16 @@
 # <%= cmd %>
 require "rubygems"
 require 'getoptlong'
+require 'erubis'
+require 'fileutils'
+include FileUtils
+
 <% if load_path? %>
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/<%= load_path %>')
 <% end %>
 require "yagl"
+include Yagl::SetOption::SetMethod
+include Yagl::DSL::Commands
 include Yagl::DSL::MethodBody
 
 
@@ -42,4 +48,14 @@ rescue GetoptLong::InvalidOption => e
 end
 
 <%= autorun %>
+
+# fake out script method
+def script(tag, &block); end
+
+<%= parse_yaglfile %>
+
+# some logic might fo here to skip template processing
+# this is more for the other template (target.eruby)
+
+<%= process_templates  %>
 
