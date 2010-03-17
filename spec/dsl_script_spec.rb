@@ -1,4 +1,7 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
+require "fileutils"
+
+include FileUtils
 
 describe "DSL::Script" do
   before(:each) do
@@ -69,6 +72,33 @@ nothing = false
     it "should have a maker method" do
       maker.should == "inf = -1\n"
     end
+  end
+end
+
+describe "Yaglfile parsing" do
+  before(:all) do
+    q=%q{
+script :autorun do
+  v = 1
+  q = 2
+  puts v + q * 4
+  puts "done"
+end
+    }
+    @dir = File.expand_path(File.dirname(__FILE__) + '/tmp/spec_scratch')
+    mkdir_p(@dir)
+    
+    @fname=@dir + '/Yaglfile'
+    File.open(@fname, "w+") do |f|
+      f.write(q)
+    end
+  end
+  before(:each) do
+    @script = Yagl::DSL::Script.new(File.read(@fname))
+  end
+  it "should read the file and parse it" do
+    @script.hash.length.should == 1
+    @script.hash[:autorun].should_not be_nil
   end
 end
 

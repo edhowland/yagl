@@ -96,7 +96,7 @@ if verbose?
     puts opt.usage
   end
 else
-  puts 'not verbose'
+  # puts 'not verbose'
 end
 
 # fake out for cucumber yagl.feature

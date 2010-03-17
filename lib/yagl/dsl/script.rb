@@ -30,10 +30,12 @@ module Yagl
             sym = syms.first.identifier.token
           end
           src=''
-          c.block.elements.each do |e|
-            src << e.to_ruby + "\n"
+          unless c.block.nil?
+            c.block.elements.each do |e|
+              src << e.to_ruby + "\n"
+            end
+            @elements << Element.new(src, id, sym)
           end
-          @elements << Element.new(src, id, sym)
         end
         @elements.reject! {|e| !e.script?}
       end

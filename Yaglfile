@@ -4,22 +4,36 @@
 
 option :source, [:argument], 'The source erubus template to use'
 option :output, [:argument], 'The output file'
+option :yaglfile, [:argument], 'The Yagl source file (Default: Yaglfile, dir.ygl)'
 option :verbose, :V, 'Show lots of output'
-option :pretend, 'dry-run, do not do anything, but show what would have happened'
+option :pretend, 'Run but do not make any changes'
 option :load_path, [:argument], 'prepend LOAD_PATH to $LOAD_pATH'
 option :help
 
 # script task :autorun is the default. Any other
-# name will be output at a named place in the erubus
-# template:
+# name will be output at a named place in the erubus template:
 # script :builder do ... end
 # <%= builder %>
 
 script :autorun do 
-  die $usage if help?
-  if verbose?
-    puts 'verbose output'
+  def vputs(msg, *args)
+    puts msg + args.join(' ') if verbose?
   end
-  die if pretend?
+  
+  die $usage if help?
+  
+  cmd=(File.basename(Dir.pwd))
+  if output?
+    target = output
+  else
+    target=ARGV[0] + '/bin/' + cmd 
+  end
+  vputs 'target: ', target
+  
+
+  yaglsrc = File.exists?('Yaglfile') ? 'Yaglfile' : cmd + '.ygl'
+  yaglsrc = yaglfile? ? yaglfile :  yaglsrc
+  die yaglsrc + ' does not exist' unless File.exists?(yaglsrc)
+  vputs 'Yagl source: ', yaglsrc
 end
 

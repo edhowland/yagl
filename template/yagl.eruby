@@ -6,6 +6,8 @@ require 'getoptlong'
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/<%= load_path %>')
 <% end %>
 require "yagl"
+include Yagl::DSL::MethodBody
+
 
 $usage=%Q{
 Usage:
@@ -39,5 +41,5 @@ rescue GetoptLong::InvalidOption => e
   die e.message
 end
 
-<%= $script %>
+<%= autorun %>
 

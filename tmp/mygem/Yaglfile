@@ -1,6 +1,1 @@
-script :autorun do
-  v = 1
-  q = 2
-  puts v + q * 4
-  puts "done"
-end
+template :ruby_19
