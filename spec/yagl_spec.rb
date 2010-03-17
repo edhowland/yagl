@@ -6,23 +6,36 @@ include FileUtils
 describe "Yagl" do
   describe "Discoverer" do
     before(:all) do
-      @dir = File.expand_path(File.dirname(__FILE__) + '/templates')
+      @home = File.expand_path(File.dirname(__FILE__)) 
+      @dir =  @home + '/templates'
       mkdir_p @dir
-      Dir.chdir File.expand_path(File.dirname(__FILE__))
+      mkdir_p @home + '/aaa/templates'
+      mkdir_p @home + '/aaa/template'
     end
     before(:each) do
       @discoverer = Yagl::Discoverer.new
+      Dir.chdir @home
     end
     it "should discover the templates folder" do
       @discoverer.templates.should == 'templates'
     end
     it "should discuver spec/templates" do
       Dir.chdir(File.expand_path(File.dirname(__FILE__)) + '/..')
-      @discoverer.templates.should == 'spec/templates'
+      @discoverer.templates.should == 'template'
     end
     it "should discover no templates" do
       Dir.chdir(File.expand_path(File.dirname(__FILE__)) + '/../features')
       @discoverer.templates.should be_nil
+    end
+    it "should get the sizes of the matches" do
+      @discoverer.match_sizes(Dir['**/templates']).should == [13, 9]
+    end
+    it "should discover root most template" do
+      @discoverer.templates.should == 'templates'
+    end
+    it "should discover template" do
+      Dir.chdir(@home + '/aaa')
+      @discoverer.templates.should == 'template'
     end
   end
   

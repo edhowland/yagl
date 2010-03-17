@@ -35,5 +35,13 @@ script :autorun do
   yaglsrc = yaglfile? ? yaglfile :  yaglsrc
   die yaglsrc + ' does not exist' unless File.exists?(yaglsrc)
   vputs 'Yagl source: ', yaglsrc
+  
+  discoverer=Yagl::Discoverer.new
+  template_root=discoverer.templates
+  vputs 'Template: ', template_root
+  
+  source = source? ? source : template_root + '/yagl.eruby'
+  die source + 'does not exist' unless File.exists?(source)
+  vputs 'ERubis source ', source
 end
 
