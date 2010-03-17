@@ -22,6 +22,10 @@ script :autorun do
   
   die $usage if help?
   
+  # load path forced for now
+  load_path='../lib'
+  load_path!
+  
   cmd=(File.basename(Dir.pwd))
   if output?
     target = output

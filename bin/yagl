@@ -6,7 +6,7 @@ require 'erubis'
 require 'fileutils'
 include FileUtils
 
-$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/lib')
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../lib')
 require "yagl"
 include Yagl::SetOption::SetMethod
 include Yagl::DSL::Commands
@@ -67,6 +67,8 @@ def vputs(msg, *args)
     puts msg + args.join(' ') if verbose?
   end
 die $usage if help?
+load_path='../lib'
+load_path!
 cmd=(File.basename(Dir.pwd))
 if output?
     target = output
