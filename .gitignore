@@ -19,3 +19,8 @@ rdoc
 pkg
 
 ## PROJECT::SPECIFIC
+*.log
+*.out
+*.pid
+*_id
+*_jar
