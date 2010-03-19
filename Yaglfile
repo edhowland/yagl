@@ -6,7 +6,10 @@ option :source, [:argument], 'The source erubus template to use'
 option :output, [:argument], 'The output file'
 option :yaglfile, [:argument], 'The Yagl source file (Default: Yaglfile, dir.ygl)'
 option :verbose, :V, 'Show lots of output'
+option :quiet, 'Run quietly, show no output'
 option :pretend, 'Run but do not make any changes'
+option :force, 'Force overwrite of existing files'
+option :skip, :S, 'Skip files that already exist'
 option :load_path, [:argument], 'prepend LOAD_PATH to $LOAD_pATH'
 option :help
 
@@ -17,8 +20,34 @@ option :help
 
 script :autorun do 
   def vputs(msg, *args)
-    puts msg + args.join(' ') if verbose?
+    puts msg + (args.empty? ? '' : ': ' + args.join(' ')) if verbose?
   end
+  def qputs(*args)
+    puts(*args) unless quiet?
+  end
+  
+  def conditionally_execute(cmd, dfile, *args, &block)
+    if cmd == :chmod
+      vputs 'changing mode', args[0]
+      vputs "pretending" if pretend?
+      vputs "skipping" if skip?
+      self.send cmd, *args unless pretend? or skip?
+    else
+      if (File.exists? args.last and !force?) or File.directory? args.last
+        qputs "exists " + dfile
+      else
+        qputs((skip? ? 'skipping' : "create") + " #{dfile}")
+        if block_given?
+          yield args
+        else
+          vputs "pretending" if pretend?
+          vputs "skipping" if skip?
+          self.send cmd, *args unless pretend? or skip?
+        end
+      end
+    end
+  end
+  
   
   die $usage if help?
   
@@ -26,27 +55,25 @@ script :autorun do
   load_path='../lib'
   load_path!
   
+  destination = ARGV[0]
+  
   cmd=(File.basename(Dir.pwd))
   if output?
     target = output
   else
     target=ARGV[0] + '/bin/' + cmd 
   end
-  vputs 'target: ', target
+  vputs 'target', target
   
 
   yaglsrc = File.exists?('Yaglfile') ? 'Yaglfile' : cmd + '.ygl'
   yaglsrc = yaglfile? ? yaglfile :  yaglsrc
-  die yaglsrc + ' does not exist' unless File.exists?(yaglsrc)
-  vputs 'Yagl source: ', yaglsrc
+  die "Yaglfile and #{yaglsrc} do not exist" unless File.exists?(yaglsrc)
+  vputs 'Yagl source', yaglsrc
   
   discoverer=Yagl::Discoverer.new
   template_root=discoverer.templates
-  vputs 'Template: ', template_root
-  
-  source = source? ? source : template_root + '/yagl.eruby'
-  die source + 'does not exist' unless File.exists?(source)
-  vputs 'ERubis source ', source
+  vputs 'Template', template_root
 end
 
 script :parse_yaglfile do
@@ -66,18 +93,51 @@ script :parse_yaglfile do
   meta << yaglog
 end
 
+# this is the main processing loop
 script :process_templates do
-  eruby = Erubis::Eruby.new(File.read(source))    # create Eruby object
-  result = eruby.result(binding())
-
-  vputs 'Writing ', target
+  # source = source? ? source : template_root + '/yagl.eruby'
+  # die source + 'does not exist' unless File.exists?(source)
+  # vputs 'ERubis source', source
   
-  unless pretend?
-    File.open(target, "w+") do |f|
-      f.write result
-    end 
-    chmod(0755, target)
-  end
+  # Dir.chdir(template_root) do |path|
+  #   vputs 'in', path
+    Dir.glob template_root + '/**/*' do |file|
+      vputs 'current file', file
+      src=file  #File.join(path,file)
+      pname = Pathname.new src
+      src_parts = pname.parts
+      src_parts.shift # shift off template_root
+      dpath = Pathname.new destination
+      dest = dpath.join(*src_parts).to_s
+      # dest=File.join(dest, file)
+      vputs "src, dest", src, dest
+      if File.directory? src
+        conditionally_execute :mkdir_p, dest, dest
+      else
+        stat = File.stat src
+        # if an eruby or erb file, translate it
+        if pname.match_final_ext(%w{eruby erb})
+          eruby = Erubis::Eruby.new(File.read(src))    # create Eruby object
+          result = eruby.result(binding())
+          dname = pname.strip_final_ext
+          dparts = src_parts
+          dparts.pop
+          
+          dest = dpath.join(*dparts, dname).to_s
+          vputs 'translating', src, 'to', dest
+          conditionally_execute :write, dest, dest do |args|
+            File.open(args.last, 'w+') do |f|
+              f.write(result)
+            end
+          end
+        else
+          conditionally_execute :cp, dest, src, dest
+        end
+        conditionally_execute :chmod, dest, stat.mode, dest
+      end
+    end
+  # end  
+
   vputs 'Done'
 end
 

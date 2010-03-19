@@ -64,7 +64,7 @@ rescue GetoptLong::InvalidOption => e
 end
 
 def vputs(msg, *args)
-    puts msg + args.join(' ') if verbose?
+    puts msg + (args.empty? ? '' : ': ' + args.join(' ')) if verbose?
   end
 die $usage if help?
 load_path='../lib'
@@ -75,17 +75,17 @@ if output?
   else
     target=ARGV[0] + '/bin/' + cmd 
   end
-vputs 'target: ', target
+vputs 'target', target
 yaglsrc = File.exists?('Yaglfile') ? 'Yaglfile' : cmd + '.ygl'
 yaglsrc = yaglfile? ? yaglfile :  yaglsrc
 die yaglsrc + ' does not exist' unless File.exists?(yaglsrc)
-vputs 'Yagl source: ', yaglsrc
+vputs 'Yagl source', yaglsrc
 discoverer=Yagl::Discoverer.new
 template_root=discoverer.templates
-vputs 'Template: ', template_root
+vputs 'Template', template_root
 source = source? ? source : template_root + '/yagl.eruby'
 die source + 'does not exist' unless File.exists?(source)
-vputs 'ERubis source ', source
+vputs 'ERubis source', source
 
 
 # fake out script method
@@ -111,7 +111,7 @@ meta << yaglog
 
 eruby = Erubis::Eruby.new(File.read(source))
 result = eruby.result(binding())
-vputs 'Writing ', target
+vputs 'Writing', target
 unless pretend?
     File.open(target, "w+") do |f|
       f.write result
