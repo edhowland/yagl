@@ -1,0 +1,47 @@
+# this is the main processing loop
+script :process_templates do
+  # source = source? ? source : template_root + '/yagl.eruby'
+  # die source + 'does not exist' unless File.exists?(source)
+  # vputs 'ERubis source', source
+  
+  # Dir.chdir(template_root) do |path|
+  #   vputs 'in', path
+    Dir.glob template_root + '/**/*' do |file|
+      vputs 'current file', file
+      src=file  #File.join(path,file)
+      pname = Pathname.new src
+      src_parts = pname.parts
+      src_parts.shift # shift off template_root
+      dpath = Pathname.new destination
+      dest = dpath.join(*src_parts).to_s
+      # dest=File.join(dest, file)
+      vputs "src, dest", src, dest
+      if File.directory? src
+        conditionally_execute :mkdir_p, dest, dest
+      else
+        stat = File.stat src
+        # if an eruby or erb file, translate it
+        if pname.match_final_ext(%w{eruby erb})
+          eruby = Erubis::Eruby.new(File.read(src))    # create Eruby object
+          result = eruby.result(binding())
+          dname = pname.strip_final_ext
+          dparts = src_parts
+          dparts.pop
+          
+          dest = dpath.join(*dparts, dname).to_s
+          vputs 'translating', src, 'to', dest
+          conditionally_execute :write, dest, dest do |args|
+            File.open(args.last, 'w+') do |f|
+              f.write(result)
+            end
+          end
+        else
+          conditionally_execute :cp, dest, src, dest
+        end
+        conditionally_execute :chmod, dest, stat.mode, dest
+      end
+    end
+  # end  
+
+  vputs 'Done'
+end

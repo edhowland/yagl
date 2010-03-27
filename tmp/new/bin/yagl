@@ -1,0 +1,187 @@
+#!/usr/bin/env ruby
+# yagl
+require "rubygems"
+require 'getoptlong'
+require 'erubis'
+require 'fileutils'
+include FileUtils
+
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../lib')
+require "yagl"
+include Yagl::SetOption::SetMethod
+include Yagl::DSL::Commands
+include Yagl::DSL::MethodBody
+
+
+$usage=%Q{
+Usage:
+  yagl [options] destination
+  General options:
+     -s, --source SOURCE            The source erubus template to use
+     -o, --output OUTPUT            The output file
+     -y, --yaglfile YAGLFILE        The Yagl source file (Default: Yaglfile, dir.ygl)
+     -V, --verbose                  Show lots of output
+     -q, --quiet                    Run quietly, show no output
+     -p, --pretend                  Run but do not make any changes
+     -f, --force                    Force overwrite of existing files
+     -S, --skip                     Skip files that already exist
+     -l, --load_path LOAD_PATH      prepend LOAD_PATH to $LOAD_pATH
+     -h, --help                     Show this help
+
+}
+
+opts = GetoptLong.new(
+  ['--source', '-s', GetoptLong::REQUIRED_ARGUMENT],
+['--output', '-o', GetoptLong::REQUIRED_ARGUMENT],
+['--yaglfile', '-y', GetoptLong::REQUIRED_ARGUMENT],
+['--verbose', '-V', GetoptLong::NO_ARGUMENT],
+['--quiet', '-q', GetoptLong::NO_ARGUMENT],
+['--pretend', '-p', GetoptLong::NO_ARGUMENT],
+['--force', '-f', GetoptLong::NO_ARGUMENT],
+['--skip', '-S', GetoptLong::NO_ARGUMENT],
+['--load_path', '-l', GetoptLong::REQUIRED_ARGUMENT],
+['--help', '-h', GetoptLong::NO_ARGUMENT]
+)
+
+include Yagl::SetOption::SetMethod
+# set defaults
+group = Yagl::OptionGroup.new 
+  group << Yagl::Option.new('source')
+  group << Yagl::Option.new('output')
+  group << Yagl::Option.new('yaglfile')
+  group << Yagl::Option.new('verbose')
+  group << Yagl::Option.new('quiet')
+  group << Yagl::Option.new('pretend')
+  group << Yagl::Option.new('force')
+  group << Yagl::Option.new('skip')
+  group << Yagl::Option.new('load_path')
+  group << Yagl::Option.new('help')
+
+
+group.each do |opt|
+  default_from_option opt.long_option
+end
+
+
+begin
+  opts.each do |opt, arg|
+    methods_from_option opt
+    accessors_from_option opt, arg unless arg.blank?
+  end
+rescue GetoptLong::InvalidOption => e
+  die e.message
+end
+
+def vputs(msg, *args)
+    puts msg + (args.empty? ? '' : ': ' + args.join(' ')) if verbose?
+  end
+def qputs(*args)
+    puts(*args) unless quiet?
+  end
+def conditionally_execute(cmd, dfile, *args, &block)
+    if cmd == :chmod
+      vputs 'changing mode', args[0]
+      vputs "pretending" if pretend?
+      vputs "skipping" if skip?
+      self.send cmd, *args unless pretend? or skip?
+    else
+      if (File.exists? args.last and !force?) or File.directory? args.last
+        qputs "exists " + dfile
+      else
+        qputs((skip? ? 'skipping' : "create") + " #{dfile}")
+        if block_given?
+          yield args
+        else
+          vputs "pretending" if pretend?
+          vputs "skipping" if skip?
+          self.send cmd, *args unless pretend? or skip?
+        end
+      end
+    end
+  end
+die $usage if help?
+load_path='../lib'
+load_path!
+destination = ARGV[0]
+cmd=(File.basename(Dir.pwd))
+if output?
+    target = output
+  else
+    target=ARGV[0] + '/bin/' + cmd 
+  end
+vputs 'target', target
+yaglsrc = File.exists?('Yaglfile') ? 'Yaglfile' : cmd + '.ygl'
+yaglsrc = yaglfile? ? yaglfile :  yaglsrc
+die "Yaglfile and #{yaglsrc} do not exist" unless File.exists?(yaglsrc)
+vputs 'Yagl source', yaglsrc
+discoverer=Yagl::Discoverer.new
+template_root=discoverer.templates
+vputs 'Template', template_root
+
+
+# fake out script method
+def script(tag, &block); end
+
+src=''
+scriptsd=File.expand_path(File.join(File.dirname(__FILE__), *%w{.. lib scripts}))
+vputs 'searching for yagl scripts in', scriptsd
+Dir[scriptsd + '**/*.ygl'].each do |file|
+    vputs 'importing', file
+    src = File.read(file)
+    eval src
+    scr = Yagl::DSL::Script.new(src)
+    create_methods!(scr.hash)
+  end
+src=File.read(yaglsrc)
+eval src
+scr = Yagl::DSL::Script.new(src)
+create_methods!(scr.hash)
+meta = Yagl::MetaOptionGroup.new
+yaglog = Yagl::OptionGroup.new
+Storage.each do |opt|
+    yaglog << opt
+  end
+meta << yaglog
+
+
+# some logic might fo here to skip template processing
+# this is more for the other template (target.eruby)
+
+Dir.glob template_root + '/**/*' do |file|
+      vputs 'current file', file
+      src=file  #File.join(path,file)
+      pname = Pathname.new src
+      src_parts = pname.parts
+      src_parts.shift # shift off template_root
+      dpath = Pathname.new destination
+      dest = dpath.join(*src_parts).to_s
+      # dest=File.join(dest, file)
+      vputs "src, dest", src, dest
+      if File.directory? src
+        conditionally_execute :mkdir_p, dest, dest
+      else
+        stat = File.stat src
+        # if an eruby or erb file, translate it
+        if pname.match_final_ext(%w{eruby erb})
+          eruby = Erubis::Eruby.new(File.read(src))    # create Eruby object
+          result = eruby.result(binding())
+          dname = pname.strip_final_ext
+          dparts = src_parts
+          dparts.pop
+          
+          dest = dpath.join(*dparts, dname).to_s
+          vputs 'translating', src, 'to', dest
+          conditionally_execute :write, dest, dest do |args|
+            File.open(args.last, 'w+') do |f|
+              f.write(result)
+            end
+          end
+        else
+          conditionally_execute :cp, dest, src, dest
+        end
+        conditionally_execute :chmod, dest, stat.mode, dest
+      end
+    end
+vputs 'Done'
+
+
