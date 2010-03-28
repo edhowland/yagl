@@ -7,5 +7,6 @@ option :quiet, 'Run quietly, show no output'
 option :pretend, 'Run but do not make any changes'
 option :force, 'Force overwrite of existing files'
 option :skip, :S, 'Skip files that already exist'
+option :debug, :X, 'Debug internal events and stuff'
 option :load_path, [:argument], 'prepend LOAD_PATH to $LOAD_pATH'
 option :help

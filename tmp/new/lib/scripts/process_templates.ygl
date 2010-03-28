@@ -1,47 +1,130 @@
 # this is the main processing loop
 script :process_templates do
-  # source = source? ? source : template_root + '/yagl.eruby'
-  # die source + 'does not exist' unless File.exists?(source)
-  # vputs 'ERubis source', source
+  require "erubis"
+  require "event-engine"
   
-  # Dir.chdir(template_root) do |path|
-  #   vputs 'in', path
-    Dir.glob template_root + '/**/*' do |file|
-      vputs 'current file', file
-      src=file  #File.join(path,file)
-      pname = Pathname.new src
-      src_parts = pname.parts
-      src_parts.shift # shift off template_root
-      dpath = Pathname.new destination
-      dest = dpath.join(*src_parts).to_s
-      # dest=File.join(dest, file)
-      vputs "src, dest", src, dest
-      if File.directory? src
-        conditionally_execute :mkdir_p, dest, dest
-      else
-        stat = File.stat src
-        # if an eruby or erb file, translate it
-        if pname.match_final_ext(%w{eruby erb})
-          eruby = Erubis::Eruby.new(File.read(src))    # create Eruby object
-          result = eruby.result(binding())
-          dname = pname.strip_final_ext
-          dparts = src_parts
-          dparts.pop
-          
-          dest = dpath.join(*dparts, dname).to_s
-          vputs 'translating', src, 'to', dest
-          conditionally_execute :write, dest, dest do |args|
-            File.open(args.last, 'w+') do |f|
-              f.write(result)
-            end
-          end
-        else
-          conditionally_execute :cp, dest, src, dest
+  module FileInterest
+    def interested? event
+      event.respond_to? :file? and event.file?
+    end
+  end
+
+  module Splitter
+    include AlwaysInterested
+    def handle event
+      evt_parts = event.parts
+      evt_parts.shift
+      dpath = Pathname.new 'dest'
+      [:noop, event, dpath.join(*evt_parts), {}]
+    end
+  end
+
+  module Skipper
+    include AlwaysInterested
+    def handle event
+      event[-1][:noop] = true if event[-2].exist?
+      event
+    end
+  end
+
+  module TranslatprCommand
+    def translate(src, dest, opts={})
+      unless opts[:noop]
+        qputs "Translate #{src.to_s} to #{dest.to_s}"
+        eruby = Erubis::Eruby.new(File.read(src))    # create Eruby object
+        # FIXME - remove once running in real binding
+        target = Pathname.pwd.basename
+        result = eruby.result(binding())
+        File.open(dest, 'w+') do |f|
+          f.write(result)
         end
-        conditionally_execute :chmod, dest, stat.mode, dest
       end
     end
-  # end  
+  end
+  
+  module Noop
+    def noop(*args); end
+  end
 
+  module Translator
+    include FileInterest
+    alias :file_interested? :interested?
+    def interested? event
+      file_interested?(event) and event.final_ext =~ %r{eruby|erb} 
+    end
+    def handle event
+      dest = event[-2]
+      target_fname = dest.strip_final_ext
+      dparts = dest.parts
+      dparts[-1] = target_fname
+      dest = Pathname.new('.').join(*dparts)
+      event[0] = :translate
+      event[-2] = dest
+      event
+    end
+  end
+
+  module DirectoryMaker
+    def interested? event
+      event.respond_to? :directory? and event.directory?
+    end
+    def handle event
+      event.shift # get rid of :noop, shift to the left
+      event[0] = :mkdir_p
+      event
+    end
+  end
+
+  module FileCopier
+    include FileInterest
+    def handle event
+      event[0] = :cp
+      event[-1][:preserve] = true
+      event
+    end
+  end
+
+  module Action
+    include AlwaysInterested
+    def handle event
+      puts "#{(event[-1][:noop] || (event[-2].exist? && event[-2].directory?)) ? 'Exists' : 'Create'} #{event[-2].to_s}"
+      event
+    end
+  end
+
+  module ExecCommand
+    include AlwaysInterested
+    include FileUtils
+    include Noop
+    include TranslatprCommand
+    def handle event
+      self.send event[0], *event[(1..-1)]
+      event
+    end
+  end
+  
+  module Debugger
+    include AlwaysInterested
+    def handle event
+      puts event.inspect
+      event
+    end
+  end
+  
+  engine = EventEngine::Engine.new
+  engine.run do |en|
+    en.handle Splitter
+    en.handle DirectoryMaker
+    en.handle FileCopier
+    en.handle Translator
+    en.handle Skipper if skip? or !force?
+    en.handle Debugger if debug?
+    en.handle Action unless quiet? and !verbose?
+    en.handle ExecCommand unless pretend?
+  end
+
+  templated = Dir[template_root + '/**/*'].map {|l| Pathname.new l}
+
+  templated.each {|l| engine.trigger l}
   vputs 'Done'
 end

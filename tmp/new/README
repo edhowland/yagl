@@ -1,0 +1,45 @@
+This is the experimental branch
+This is also the event branch of the experimental branch
+
+To run:
+  to create the initial intermediate yagl:
+  alias r='ruby -I../../lib'
+  r ../../bin/yagl_boot 
+  
+  that should create bin/yagl
+  
+  r bin/yagl agem
+  
+  that should create agem/bin/yagl along with agem/lib/n.ygl
+  
+  cd agem
+  alias rr='ruby -I../../../lib'
+  rm -rd dest; rr bin/yagl dest
+  
+  This should copy template/** to dest
+  
+  ----------
+  Notes:
+  
+  The first call of the intermediate new/bin/yagl should create agem/bin/agem
+  In order to make that happen, when reading the templates dir, if it finds a file named _target.eruby, it should repalace it with the target name, in this case agem.
+  
+  To edit what happens in the final target script. edit new/lib/scripts/*.ygl
+  
+  This event branch relies on the event-engine gem, which must be installed, or added to the load path if using its source.
+  
+  Change over to: r bin/yagl final
+  This should generate the final yagl based on final Yaglfile and lib/scripts/*.ygl
+  
+  Move agem to there and :
+  alias rrr='ruby -I../../../../lib'
+  cd final
+  # final needs ? Yaglfile?
+  rr bin/yagl agem
+  cd agem
+  rrr bin/agem dest
+  tree dest
+  
+  final/bin/yagl will use the new event-engine handlers
+  # No clue what will be in agem/bin/agem
+  
