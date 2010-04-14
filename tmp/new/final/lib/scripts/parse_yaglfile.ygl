@@ -1,0 +1,25 @@
+script :parse_yaglfile do
+  src=''
+  scriptsd=File.expand_path(File.join(File.dirname(__FILE__), *%w{.. lib scripts}))
+  vputs 'searching for yagl scripts in', scriptsd
+  Dir[scriptsd + '**/*.ygl'].each do |file|
+    vputs 'importing', file
+    src = File.read(file)
+    eval src
+    scr = Yagl::DSL::Script.new(src)
+    create_methods!(scr.hash)
+  end
+
+  if File.exists? yaglsrc
+    src=File.read(yaglsrc)
+    eval src
+    scr = Yagl::DSL::Script.new(src)
+    create_methods!(scr.hash)
+  end
+  meta = Yagl::MetaOptionGroup.new
+  yaglog = Yagl::OptionGroup.new
+  Storage.each do |opt|
+    yaglog << opt
+  end
+  meta << yaglog
+end

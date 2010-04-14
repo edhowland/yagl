@@ -33,13 +33,17 @@ To run:
   
   Move agem to there and :
   alias rrr='ruby -I../../../../lib'
+  # copy lib/scripts/*.ygl to final/lib/scripts
+  # need final/lib/scripts/lib.ygl with vputs, qputs
   cd final
-  # final needs ? Yaglfile?
-  rr bin/yagl agem
-  cd agem
-  rrr bin/agem dest
+  rr bin/yagl omega
+  cd omega
+  rrr bin/yagl dest
   tree dest
   
-  final/bin/yagl will use the new event-engine handlers
-  # No clue what will be in agem/bin/agem
+  omega is the final final yagl that includes the event-engine stuff
+  omega/bin/yagl and lib/* need to get copied to root <yagl>
+  lib/process_templates.ygl needs to turn _target.eruby into <cmd>
   
+  After that works (specs and esp. features pass, then discard tmp/**)
+    

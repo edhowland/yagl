@@ -1,0 +1,252 @@
+#!/usr/bin/env ruby
+# final
+require "rubygems"
+require 'getoptlong'
+require 'erubis'
+require 'fileutils'
+include FileUtils
+
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../lib')
+require "yagl"
+include Yagl::SetOption::SetMethod
+include Yagl::DSL::Commands
+include Yagl::DSL::MethodBody
+
+
+$usage=%Q{
+Usage:
+  final [options] destination
+  General options:
+     -s, --source SOURCE            The source erubus template to use
+     -o, --output OUTPUT            The output file
+     -y, --yaglfile YAGLFILE        The Yagl source file (Default: Yaglfile, dir.ygl)
+     -V, --verbose                  Show lots of output
+     -q, --quiet                    Run quietly, show no output
+     -p, --pretend                  Run but do not make any changes
+     -f, --force                    Force overwrite of existing files
+     -S, --skip                     Skip files that already exist
+     -X, --debug                    Debug internal events and stuff
+     -l, --load_path LOAD_PATH      prepend LOAD_PATH to $LOAD_pATH
+     -h, --help                     Show this help
+
+}
+
+opts = GetoptLong.new(
+  ['--source', '-s', GetoptLong::REQUIRED_ARGUMENT],
+['--output', '-o', GetoptLong::REQUIRED_ARGUMENT],
+['--yaglfile', '-y', GetoptLong::REQUIRED_ARGUMENT],
+['--verbose', '-V', GetoptLong::NO_ARGUMENT],
+['--quiet', '-q', GetoptLong::NO_ARGUMENT],
+['--pretend', '-p', GetoptLong::NO_ARGUMENT],
+['--force', '-f', GetoptLong::NO_ARGUMENT],
+['--skip', '-S', GetoptLong::NO_ARGUMENT],
+['--debug', '-X', GetoptLong::NO_ARGUMENT],
+['--load_path', '-l', GetoptLong::REQUIRED_ARGUMENT],
+['--help', '-h', GetoptLong::NO_ARGUMENT]
+)
+
+include Yagl::SetOption::SetMethod
+# set defaults
+group = Yagl::OptionGroup.new 
+  group << Yagl::Option.new('source')
+  group << Yagl::Option.new('output')
+  group << Yagl::Option.new('yaglfile')
+  group << Yagl::Option.new('verbose')
+  group << Yagl::Option.new('quiet')
+  group << Yagl::Option.new('pretend')
+  group << Yagl::Option.new('force')
+  group << Yagl::Option.new('skip')
+  group << Yagl::Option.new('debug')
+  group << Yagl::Option.new('load_path')
+  group << Yagl::Option.new('help')
+
+
+group.each do |opt|
+  default_from_option opt.long_option
+end
+
+
+begin
+  opts.each do |opt, arg|
+    methods_from_option opt
+    accessors_from_option opt, arg unless arg.blank?
+  end
+rescue GetoptLong::InvalidOption => e
+  die e.message
+end
+
+# autorun %>
+def vputs(msg, *args)
+    puts msg + (args.empty? ? '' : ': ' + args.join(' ')) if verbose?
+  end
+def qputs(*args)
+    puts(*args) unless quiet?
+  end
+die $usage if help?
+load_path='../lib'
+load_path!
+destination = ARGV[0]
+cmd=(File.basename(Dir.pwd))
+if output?
+    target = output
+  else
+    target=ARGV[0] + '/bin/' + cmd 
+  end
+vputs 'target', target
+yaglsrc = File.exists?('Yaglfile') ? 'Yaglfile' : cmd + '.ygl'
+yaglsrc = yaglfile? ? yaglfile :  yaglsrc
+if File.exists?(yaglsrc)
+    vputs 'Yagl source', yaglsrc
+  else
+    vputs 'No Yagl source'
+  end
+discoverer=Yagl::Discoverer.new
+template_root=discoverer.templates
+vputs 'Template', template_root
+
+
+# fake out script method
+def script(tag, &block); end
+
+src=''
+scriptsd=File.expand_path(File.join(File.dirname(__FILE__), *%w{.. lib scripts}))
+vputs 'searching for yagl scripts in', scriptsd
+Dir[scriptsd + '**/*.ygl'].each do |file|
+    vputs 'importing', file
+    src = File.read(file)
+    eval src
+    scr = Yagl::DSL::Script.new(src)
+    create_methods!(scr.hash)
+  end
+if File.exists? yaglsrc
+    src=File.read(yaglsrc)
+    eval src
+    scr = Yagl::DSL::Script.new(src)
+    create_methods!(scr.hash)
+  end
+meta = Yagl::MetaOptionGroup.new
+yaglog = Yagl::OptionGroup.new
+Storage.each do |opt|
+    yaglog << opt
+  end
+meta << yaglog
+
+
+# some logic might fo here to skip template processing
+# this is more for the other template (target.eruby)
+
+require "erubis"
+require "event-engine"
+module FileInterest
+    def interested? event
+      event.respond_to? :file? and event.file?
+    end
+  end
+module Splitter
+    include AlwaysInterested
+    def handle event
+      evt_parts = event.parts
+      evt_parts.shift
+      dpath = Pathname.new 'dest'
+      [:noop, event, dpath.join(*evt_parts), {}]
+    end
+  end
+module Skipper
+    include AlwaysInterested
+    def handle event
+      event[-1][:noop] = true if event[-2].exist?
+      event
+    end
+  end
+module TranslatprCommand
+    def translate(src, dest, opts={})
+      unless opts[:noop]
+        qputs "Translate #{src.to_s} to #{dest.to_s}"
+        eruby = Erubis::Eruby.new(File.read(src))    # create Eruby object
+        # FIXME - remove once running in real binding
+        target = Pathname.pwd.basename
+        result = eruby.result(binding())
+        File.open(dest, 'w+') do |f|
+          f.write(result)
+        end
+      end
+    end
+  end
+module Noop
+    def noop(*args); end
+  end
+module Translator
+    include FileInterest
+    alias :file_interested? :interested?
+    def interested? event
+      file_interested?(event) and event.final_ext =~ %r{eruby|erb} 
+    end
+    def handle event
+      dest = event[-2]
+      target_fname = dest.strip_final_ext
+      dparts = dest.parts
+      dparts[-1] = target_fname
+      dest = Pathname.new('.').join(*dparts)
+      event[0] = :translate
+      event[-2] = dest
+      event
+    end
+  end
+module DirectoryMaker
+    def interested? event
+      event.respond_to? :directory? and event.directory?
+    end
+    def handle event
+      event.shift # get rid of :noop, shift to the left
+      event[0] = :mkdir_p
+      event
+    end
+  end
+module FileCopier
+    include FileInterest
+    def handle event
+      event[0] = :cp
+      event[-1][:preserve] = true
+      event
+    end
+  end
+module Action
+    include AlwaysInterested
+    def handle event
+      puts "#{(event[-1][:noop] || (event[-2].exist? && event[-2].directory?)) ? 'Exists' : 'Create'} #{event[-2].to_s}"
+      event
+    end
+  end
+module ExecCommand
+    include AlwaysInterested
+    include FileUtils
+    include Noop
+    include TranslatprCommand
+    def handle event
+      self.send event[0], *event[(1..-1)]
+      event
+    end
+  end
+module Debugger
+    include AlwaysInterested
+    def handle event
+      puts event.inspect
+      event
+    end
+  end
+engine = EventEngine::Engine.new
+engine.setup do |en|
+    en.handle Splitter
+    en.handle DirectoryMaker
+    en.handle FileCopier
+    en.handle Translator
+    en.handle Skipper if skip? or !force?
+    en.handle Debugger if debug?
+    en.handle Action unless quiet? and !verbose?
+    en.handle ExecCommand unless pretend?
+  end
+templated = Dir[template_root + '/**/*'].map {|l| Pathname.new l}
+templated.each {|l| engine.trigger l}
+vputs 'Done'
+
+

@@ -15,8 +15,6 @@ include Yagl::DSL::Commands
 include Yagl::DSL::MethodBody
 
 
-<%= options %>
-
 $usage=%Q{
 Usage:
   <%= cmd %> [options] destination
@@ -49,7 +47,8 @@ rescue GetoptLong::InvalidOption => e
   die e.message
 end
 
-<%= autorun %>
+# autorun %>
+<%= lib %>
 
 # fake out script method
 def script(tag, &block); end

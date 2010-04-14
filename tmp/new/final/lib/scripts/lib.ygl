@@ -1,0 +1,34 @@
+# lib.ygl - various library methods for Yagl
+# depends on options.ygl to set certain predicates
+# likr verbose? quiet?
+puts 'in lib'
+script :lib do
+  def vputs(msg, *args)
+    puts msg + (args.empty? ? '' : ': ' + args.join(' ')) if verbose?
+  end
+
+  def qputs(*args)
+    puts(*args) unless quiet?
+  end
+  die $usage if help?
+  load_path='../lib'
+  load_path!
+  destination = ARGV[0]
+  cmd=(File.basename(Dir.pwd))
+  if output?
+    target = output
+  else
+    target=ARGV[0] + '/bin/' + cmd 
+  end
+  vputs 'target', target
+  yaglsrc = File.exists?('Yaglfile') ? 'Yaglfile' : cmd + '.ygl'
+  yaglsrc = yaglfile? ? yaglfile :  yaglsrc
+  if File.exists?(yaglsrc)
+    vputs 'Yagl source', yaglsrc
+  else
+    vputs 'No Yagl source'
+  end
+  discoverer=Yagl::Discoverer.new
+  template_root=discoverer.templates
+  vputs 'Template', template_root
+end
